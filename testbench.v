@@ -3,7 +3,7 @@
 `include "Inst_Mem.v"
 `include "Data_Mem.v"
 
-module testbench ()
+module testbench;
 
 reg clk, rst;
 wire [31:0] inst;

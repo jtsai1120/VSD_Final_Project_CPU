@@ -1,6 +1,6 @@
 
 
-module top (mem_data, EX_MEM_mem_rw, EX_MEM_result, pc, clk, rst, inst)
+module top (mem_data, EX_MEM_mem_rw, EX_MEM_result, pc, clk, rst, inst);
 
 inout [63:0] mem_data;
 input clk, rst;

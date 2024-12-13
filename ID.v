@@ -34,7 +34,7 @@
 `define J_imm_19_12 inst[19:12]
 `define J_rd inst[11:7]
 
-module ID (opcode, data1, data2, rd, func3, func7, imm_ext, clk, rst, inst, wdata, wrd, wopcode)
+module ID (opcode, data1, data2, rd, func3, func7, imm_ext, clk, rst, inst, wdata, wrd, wopcode);
 parameter R_type = 110011;
 input clk, rst;
 input [31:0] inst;
