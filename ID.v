@@ -65,37 +65,39 @@ always @(posedge clk or rst) begin
     end
 end
 
-always @(posdege clk or rst) begin
+always @(posedge clk or rst) begin
     if (rst) begin
         imm_ext <= 0;
     end
     else begin
         case (`OP)
-            0010011: begin // I Type
-                imm_ext <= {53{inst[31]}, inst[30:20]};
+            0010011: begin // I Type (operation)
+                imm_ext <= {{52{inst[31]}}, inst[31:20]};
             end
-            0000011: begin // I Type
-                imm_ext <= {53{inst[31]}, inst[30:20]};
+            0000011: begin // I Type (operation immediate)
+                imm_ext <= {{52{inst[31]}}, inst[31:20]};
             end
-            1100111: begin // I Type
-                imm_ext <= {53{inst[31]}, inst[30:20]};
+            1100111: begin // I Type (jalr)
+                imm_ext <= {{52{inst[31]}}, inst[31:20]};
             end
-            0100011: begin // S Type
-                imm_ext <= {53{inst[31]}, inst[30:25], inst[11:7]};
+            0100011: begin // S Type (store)
+                imm_ext <= {{52{inst[31]}}, inst[31:25], inst[11:7]};
             end
-            1100011: begin // B Type
-                imm_ext <= {52{inst[31]}, inst[7], inst[30:25], inst[11:8],1'b0};
+            1100011: begin // B Type (branch)
+                imm_ext <= {{51{inst[31]}}, inst[31], inst[7], inst[30:25], inst[11:8],1'b0};
             end
-            0110111: begin // U Type
-                imm_ext <= {33{inst[31]}, inst[30:12], 12{1'b0}};
+            0110111: begin // U Type (lui)
+                imm_ext <= {{32{inst[31]}}, inst[31:12], 12'b0};
             end
-            0010111: begin // U Type
-                imm_ext <= {33{inst[31]}, inst[30:12], 12{1'b0}};
+            0010111: begin // U Type (auipc)
+                imm_ext <= {{32{inst[31]}}, inst[31:12], 12'b0};
             end
-            1101111: begin // J Type
-                imm_ext <= {44{inst[31]},inst[19:12],inst[20],inst[30:21],1'b0}
+            1101111: begin // J Type (jal)
+                imm_ext <= {{43{inst[31]}}, inst[31], inst[19:12], inst[20], inst[30:21], 1'b0};
             end
-            default: imm_ext <= 0;
+            default: begin // Unknown or R Type (no imm)
+                imm_ext <= 0;
+            end
         endcase
     end
 end
