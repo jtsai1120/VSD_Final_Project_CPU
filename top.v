@@ -1,4 +1,8 @@
-
+`include "IF.v"
+`include "ID.v"
+`include "EX.v"
+`include "WB.v"
+`include "Controller.v"
 
 module top (mem_data, EX_MEM_mem_rw, EX_MEM_result, pc, clk, rst, inst);
 
@@ -75,7 +79,7 @@ always @(posedge clk or rst) begin
 
         // EX -> MEM
         EX_MEM_opcode <= ID_EX_opcode;
-        EX_MEM_pc_branch <= pc_branch
+        EX_MEM_pc_branch <= pc_branch;
         EX_MEM_is_branch <= is_branch;
         EX_MEM_rd <= ID_EX_rd;
         EX_MEM_result <= result;

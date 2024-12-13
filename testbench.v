@@ -1,5 +1,12 @@
 `timescale 1ns/1ps
-`include "top.v"
+
+`ifdef syn
+    `include "top_syn.v"
+    `include "tsmc18.v"
+`else
+    `include "top.v"
+`endif
+
 `include "Inst_Mem.v"
 `include "Data_Mem.v"
 
@@ -16,7 +23,11 @@ top top(mem_data, mem_rw, addr, pc, clk, rst, inst);
 Inst_Mem Inst_Mem(inst, pc);
 Data_Mem Data_Mem(mem_data, clk, rst, mem_rw, addr);
 
-$readmemb(asfasd);
-$readmemb(asfasd);
+initial begin
+    $readmemb("./Data.prog", Data_Mem.DM);
+    $readmemb("./Inst.prog", Inst_Mem.IM);
+end
+
+
 
 endmodule
