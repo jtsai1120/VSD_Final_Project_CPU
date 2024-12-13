@@ -1,6 +1,6 @@
 
 
-module Data_Mem(mem_data, clk, rst, mem_rw, addr) 
+module Data_Mem(mem_data, clk, rst, mem_rw, addr);
 
 parameter Size = 1024;
 

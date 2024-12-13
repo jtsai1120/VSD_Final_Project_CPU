@@ -1,6 +1,6 @@
 
 
-module EX (pc_branch, is_branch, result, mem_rw, is_load, clk, rst, opcode, data1, data2, func3, func7, imm, pc)
+module EX (pc_branch, is_branch, result, mem_rw, is_load, clk, rst, opcode, data1, data2, func3, func7, imm, pc);
 
 input clk, rst;
 input [6:0] opcode;

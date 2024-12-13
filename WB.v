@@ -1,5 +1,5 @@
 
-module WB (wdata, is_load, result, mem_data)
+module WB (wdata, is_load, result, mem_data);
 
 input is_load;
 input [63:0] result, mem_data;

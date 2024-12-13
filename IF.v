@@ -1,5 +1,5 @@
 
-module IF (cpc, clk, rst, pc_branch, is_branch)
+module IF (cpc, clk, rst, pc_branch, is_branch);
 
 input [31:0] pc_branch;
 input is_branch;
