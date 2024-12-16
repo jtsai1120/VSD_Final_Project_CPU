@@ -25,16 +25,6 @@ top top(mem_data, mem_rw, addr, pc, clk, rst, inst);
 Inst_Mem Inst_Mem(inst, pc);
 Data_Mem Data_Mem(mem_data, clk, rst, mem_rw, addr);
 
-initial begin : Read_Inst
-    `ifdef sorting
-        $readmemb("./test_prog/sort.prog", Inst_Mem.IM);
-    `elsif fibo
-        $readmemb("./test_prog/fibo.prog", Inst_Mem.IM);
-    `else 
-        $readmemb("./test_prog/single_inst.prog", Inst_Mem.IM);
-    `endif
-end
-
 `ifdef syn
     initial $sdf_annotate("top_syn.sdf", CPU);
 `endif
@@ -54,18 +44,82 @@ initial begin : terminal_display
     $monitor("clk=%b, rst=%b, inst=%h, pc=%h, mem_data=%h, addr=%h, mem_rw=%b", clk, rst, inst, pc, mem_data, addr, mem_rw);
 end
 
+integer i;
+integer error_flag;
+integer f_prv2, f_prv1, f_cur;
+
 initial begin : execute
     rst = 1;
     #(`HALF_CLK_TIME * 20) rst = 0;
+    
+    // Load Test Program
+    `ifdef sorting
+        $readmemb("./test_prog/sort.prog", Inst_Mem.IM);
+        $readmemb("./test_prog/sort_data.prog", Data_Mem.DM);
+    `elsif fibo
+        $readmemb("./test_prog/fibo.prog", Inst_Mem.IM);
+    `else 
+        $readmemb("./test_prog/single_inst.prog", Inst_Mem.IM);
+    `endif
+
     @(halt) begin
         $display("Halt ... ");
-        if (Data_Mem.DM[0] == 0) 
-            $display("All Testcase Passed!");
-        else 
-            $display("Failed at Section %d!", Data_Mem.DM[0]);
+        `ifdef sorting
+            error_flag = 0;
+            for (i = 1; i <= 10; i = i + 1) begin
+                if (Data_Mem.DM[i+10] != i - 4) begin // -3 ~ 6
+                    error_flag = 1;
+                    break;
+                end
+            end
+            if (error_flag == 0) 
+                $display("Passed Sorting!");
+            else 
+                $display("Failed Sorting!");
+
+            $display("Before: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d", 
+                    Data_Mem.DM[1], Data_Mem.DM[2], Data_Mem.DM[3], 
+                    Data_Mem.DM[4], Data_Mem.DM[5], Data_Mem.DM[6], 
+                    Data_Mem.DM[7], Data_Mem.DM[8], Data_Mem.DM[9], Data_Mem.DM[10]);
+            $display("After: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d",
+                    Data_Mem.DM[11], Data_Mem.DM[12], Data_Mem.DM[13], 
+                    Data_Mem.DM[14], Data_Mem.DM[15], Data_Mem.DM[16], 
+                    Data_Mem.DM[17], Data_Mem.DM[18], Data_Mem.DM[19], Data_Mem.DM[20]);
+        `elsif fibo
+            error_flag = 0;
+            if (Data_Mem.DM[1] != 1) error_flag = 1;
+            else if (Data_Mem.DM[2] != 1) error_flag = 2;
+            else begin
+                f_prv2 = 1;
+                f_prv1 = 1;
+                for (i = 3; i <= 20; i = i + 1) begin
+                    f_cur = f_prv1 + f_prv2;
+                    if (Data_Mem.DM[i] != f_cur) begin
+                        error_flag = i;
+                        break;
+                    end
+                    f_prv2 = f_prv1;
+                    f_prv1 = f_cur;
+                end
+            end
+
+            if (error_flag == 0) 
+                $display("Passed Fibo!\n");
+            else 
+                $display("Failed Fibo at f(%d)!\n", error_flag);
+
+            for (i = 1; i <= ((error_flag)? error_flag : 20); i = i + 1)
+                $display("f(%d) = %d", i, Data_Mem.DM[i]);
+        `else
+            if (Data_Mem.DM[0] == 0) 
+                $display("Passed All Testcases!");
+            else 
+                $display ("Failed at Section %d!", Data_Mem.DM[0]);
+        `endif
+
+        $display("---Simulation End---");
+        $finish;
     end
-    $display("---Simulation End---");
-    $finish;
 end
 
 endmodule
