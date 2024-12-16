@@ -60,8 +60,37 @@ WB WB(wdata, MEM_WB_is_load, MEM_WB_result, MEM_WB_mem_data);
 Controller Controller();
 
 always @(posedge clk or rst) begin
-    if (rst) begin
-        // clear all registers for pipeline
+    if (rst) begin // clear all registers for pipeline
+        // IF -> ID
+        IF_ID_pc <= 0;
+
+        // ID -> EX
+        ID_EX_pc <= 0;
+        ID_EX_opcode <= 0;
+        ID_EX_imm <= 0;
+        ID_EX_data1 <= 0;
+        ID_EX_data2 <= 0;
+        ID_EX_rd <= 0;
+        ID_EX_func3 <= 0;
+        ID_EX_func7 <= 0;
+
+        // EX -> MEM
+        EX_MEM_opcode <= 0;
+        EX_MEM_pc_branch <= 0;
+        EX_MEM_is_branch <= 0;
+        EX_MEM_rd <= 0;
+        EX_MEM_result <= 0;
+        EX_MEM_data2 <= 0;
+        EX_MEM_mem_rw <= 0;
+        EX_MEM_is_load <= 0;
+
+        // MEM -> WB
+        MEM_WB_opcode <= 0;
+        MEM_WB_rd <= 0;
+        MEM_WB_result <= 0;
+        MEM_WB_is_load <= 0;
+        MEM_WB_mem_data <= 0;
+        MEM_WB_mem_rw <= 0;
     end 
     else begin
         // IF -> ID
