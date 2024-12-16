@@ -4,12 +4,13 @@
 `include "WB.v"
 `include "Controller.v"
 
-module top (mem_data, EX_MEM_mem_rw, EX_MEM_result, pc, clk, rst, inst);
+module top (halt, mem_data, EX_MEM_mem_rw, EX_MEM_result, pc, clk, rst, inst);
 
 inout [63:0] mem_data;
 input clk, rst;
 input [31:0] inst;
 
+output halt;
 output [31:0] pc;
 output EX_MEM_mem_rw;
 output EX_MEM_result;

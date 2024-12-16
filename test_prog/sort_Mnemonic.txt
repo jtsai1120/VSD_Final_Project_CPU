@@ -1,0 +1,47 @@
+
+start:
+    addi t0, x0, 8              // Initialize array base address pointer to 0x8
+    addi t1, x0, 10             // Initialize array length to 10
+    addi t2, x0, x0             // Initialize counter i to 0
+
+copy_value:
+    beq t2, t1, end_copy_value_loop     // if i == length, end copy_value loop
+    addi t4, x0, 8              // Initialize t4 to 8 (8-byte, 64-bit)
+    mul t4, t2, t4              // offset_byte t4 = i * 8 
+    add t4, t0, t4              // t4 = base address + offset_byte
+    ld t5, 0(t4)                // Load array[i] into t5
+    sd t5, 80(t4)               // Store t5 into array[i+10]
+    addi t2, t2, 1              // Add counter i by 1
+    jal x0, copy_value          // Jump to start of copy_value
+     
+end_copy_value_loop:
+    addi t0, x0, 88             // Initialize array base address pointer to 88
+    addi t2, x0, 0              // Initialize outer loop counter i to 0
+
+outer_loop:
+    beq t2, t1, end_outer_loop  // if i == length, end outer loop
+    addi t3, x0, 0              // Initialize inner loop counter j to 0
+
+inner_loop:
+    beq t3, t1, end_inner_loop  // if j == length, end inner loop
+    addi t4, x0, 8              // Initialize t4 to 8 (8-byte, 64-bit)
+    mul t4, t3, t4              // offset_byte t4 = j * 8 
+    add t4, t0, t4              // t4 = base address + offset_byte
+    ld t5, 0(t4)                // Load array[j] into t5
+    ld t6, 8(t4)                // Load array[j+1] into t6
+    blt t5, t6, skip_swap       // if array[j] < array[j+1], skip swap
+
+    // Swap array[j] and array[j+1]
+    sd t6, 0(t4)                // Store array[j+1] into array[j]
+    sd t5, 8(t4)                // Store array[j] into array[j+1]
+
+skip_swap:
+    addi t3, t3, 1              // Increment inner loop counter j by 1
+    jal x0, inner_loop          // Jump to start of inner loop
+
+end_inner_loop:
+    addi t2, t2, 1              // Increment outer loop counter i by 1
+    jal x0, outer_loop          // Jump to start of outer loop
+
+end_outer_loop:
+    halt
