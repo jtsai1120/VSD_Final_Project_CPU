@@ -16,7 +16,9 @@ output [63:0] result;
 output mem_rw; // 0:read, 1:write
 output is_load; // 1: load, 0: others
 
+
 // 把 pc 加上 imm 傳到 pc_branch (用你們實作的加法器)
+
 
 
 // 1. 用 case 將 opcode 分類，然後個別寫出相對應的運算，並將結果存入 result
