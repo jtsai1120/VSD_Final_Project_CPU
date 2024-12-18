@@ -67,11 +67,16 @@ string Mnemonic2MachineCode(vector<string> substrings) {
     } else if (operation == "addi" || operation == "slti" || operation == "sltiu" || operation == "xori" || operation == "ori" || operation == "andi" || operation == "slli" || operation == "srli" || operation == "srai") {
         // I-type
         opcode = "0010011";
-        funct3 = (operation == "slli" || operation == "srli") ? "001" :
+        funct3 = (operation == "addi") ? "000" :
                 (operation == "slti") ? "010" :
+                (operation == "sltiu") ? "011" :
                 (operation == "xori") ? "100" :
                 (operation == "ori") ? "110" :
-                (operation == "andi") ? "111" : "000";
+                (operation == "andi") ? "111" :
+                (operation == "slli") ? "001" :
+                (operation == "srli") ? "101" :
+                (operation == "srai") ? "101" : "000";
+        funct7 = (operation == "srai") ? "0100000" : "0000000";
         rd = reg2num(substrings[1]);
         rs1 = reg2num(substrings[2]);
         imm = substrings[3];
