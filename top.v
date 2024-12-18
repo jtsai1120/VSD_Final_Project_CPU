@@ -84,7 +84,7 @@ always@(predictin or rst)begin
 
 end
 
-always@(inst or rst or NOP or flush)begin
+always@(inst or rst)begin
     if(rst)
         IF_ID_inst=0;
     else
@@ -105,6 +105,29 @@ always @(posedge clk or rst or flush) begin
         ID_EX_func3 <= `NOP_func3;
         ID_EX_func7 <= `NOP_func7;
     end 
+    else if(NOP)
+        // IF -> ID
+        IF_ID_pc <= IF_ID_pc;
+        // ID -> EX
+        ID_EX_pc <= ID_EX_pc;
+        ID_EX_opcode <= ID_EX_opcode;
+        ID_EX_imm <= ID_EX_imm;
+        ID_EX_data1 <= ID_EX_data1;
+        ID_EX_data2 <= ID_EX_data2;
+        ID_EX_rd <= ID_EX_rd;
+        ID_EX_func3 <= ID_EX_func3;
+        ID_EX_func7 <= ID_EX_func7;
+        ID_EX_prediction <= ID_EX_prediction;
+        // EX -> MEM
+        EX_MEM_opcode <= `NOP_opcode;
+        EX_MEM_pc_branch <= 0;
+        EX_MEM_is_branch <= 0;
+        EX_MEM_rd <= `NOP_rd;
+        EX_MEM_result <= 0;
+        EX_MEM_data2 <= 0;
+        EX_MEM_mem_rw <= 0;
+        EX_MEM_is_load <= 0;
+        ID_EX_prediction <= 0;
     else begin
         // IF -> ID
         IF_ID_pc <= pc;
