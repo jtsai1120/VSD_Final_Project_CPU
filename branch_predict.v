@@ -1,3 +1,10 @@
+/*
+GHR是最近8次的判斷
+address是PC的最低八位元，
+兩個訊號XOR後得到一個index
+翻BHT中index位址的結果是多少
+然後把這個實際結果丟進去GHR的最右邊，最左邊的丟掉
+*/
 module gshare_predictor (
     input start,update,
     input rst,
