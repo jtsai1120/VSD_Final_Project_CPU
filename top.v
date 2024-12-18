@@ -88,15 +88,16 @@ end
 
 always@(inst or rst or flush)begin
     if(rst)
-        IF_ID_inst=0;
+        IF_ID_inst={25{0},`NOP_opcode};
     else if(flush)
-        IF_ID_inst=0;
+        IF_ID_inst={25{0},`NOP_opcode};
     else
         IF_ID_inst=inst;
 end
 always @(posedge clk or rst) begin
     if (rst) begin
         // clear all registers for pipeline
+        //記得初始值得inst會是 addi x0 x0 0
     end
     else if(flush)begin
          // ID -> EX
