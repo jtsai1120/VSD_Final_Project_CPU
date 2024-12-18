@@ -34,27 +34,44 @@
 `define J_imm_19_12 inst[19:12]
 `define J_rd inst[11:7]
 
-module ID (opcode, data1, data2, rd, func3, func7, imm_ext, clk, rst, inst, wdata, wrd, wopcode);
+`define NOP_opcode 0010011
+`define NOP_rs1 00000
+`define NOP_rs2 00000
+`define NOP_rd 00000
+`define NOP_func7 0000000
+`define NOP_func3 000
+`define NOP_imm 000000000000
+module ID (rs1_data_control,opcode, data1, data2, rd, func3, func7, imm_ext, clk, rst, inst, wdata, wrd, wopcode,rs1_addr,control);
 parameter R_type = 110011;
 input clk, rst;
 input [31:0] inst;
 input [63:0] wdata; // write back data
 input [4:0] wrd; // write back rd 
 input [6:0] wopcode; // write back opcode
+input [4:0]    rs1_addr_control;
 
 output reg [6:0] opcode;
 output reg [63:0] data1, data2;
 output reg [4:0] rd;
 output reg [2:0] func3;
 output reg [6:0] func7;
-output reg [63:0] imm_ext;
+output reg [63:0]imm_ext;
+output     [63:0]rs1_data_control;
 
 reg [63:0] RF [0:31];
-
-always @(posedge clk or rst) begin
+assign rs1_data_control=RF[rs1_addr_control];
+always @(posedge clk or rst or flush) begin
     if (rst) begin
         // clear RF
     end 
+    else if(flush)begin
+        opcode <= NOP_opcode;
+        data1 <= RF[`NOP_rs1];
+        data2 <= RF[`NOP_rs2];
+        rd <= `NOP_rd;
+        func3 <= `NOP_func3;
+        func7 <= `NOP_func7 ;
+    end
     else begin
         opcode <= `OP;
         data1 <= RF[`R_rs1];
@@ -65,10 +82,12 @@ always @(posedge clk or rst) begin
     end
 end
 
-always @(posedge clk or rst) begin
+always @(posedge clk or rst or flush) begin
     if (rst) begin
         imm_ext <= 0;
     end
+    else if(flush)
+        imm_ext <=64{0};
     else begin
         case (`OP)
             0010011: begin // I Type (operation)
@@ -140,8 +159,8 @@ always @(negedge clk or rst) begin
     else begin
         RF[0] <= 64'b0;
         // Store 跟 Branch 不用 write back
-        if (wopcode != 7'b0100011 && wopcode != 7'b1100011) RF[wrd] <= wdata;
-        else;
+        if (opcode != 7'b0100011 && opcode != 7'b1100011) RF[wrd] <= wdata;
+        else RF[wrd] <= RF[wrd];
     end
 
 end
