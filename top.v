@@ -10,7 +10,7 @@
 `define NOP_func3 000
 `define NOP_imm 000000000000
 `define NOP_func7 0000000
-module top (flush,NOP,mem_data, EX_MEM_mem_rw, EX_MEM_result, pc, clk, rst, inst);
+module top (halt,mem_data, EX_MEM_mem_rw, EX_MEM_result, pc, clk, rst, inst);
 
 inout [63:0] mem_data;
 input clk, rst;
@@ -19,6 +19,7 @@ input [31:0] inst;
 output [31:0] pc;
 output EX_MEM_mem_rw;
 output EX_MEM_result;
+output halt;
 
 wire [63:0] imm;
 wire [63:0] wdata;
@@ -31,7 +32,7 @@ wire [31:0] control_pc;
 wire [1:0]  ForwardA,ForwardB;
 wire [63:0] for_ID_EX_data1;
 wire [63:0] for_ID_EX_data2;
-
+reg        halt_happen;
 
 // Pipelined Registers for IF/ID
 reg [31:0] IF_ID_pc;
@@ -82,6 +83,7 @@ WB WB(wdata, MEM_WB_is_load, MEM_WB_result, MEM_WB_mem_data);
 //controller
 Controller Controller(ForwardA,ForwardB,control_pc,rs1_addr_control,predictino,NOP,clk,rst,is_load,ID_EX_opcode,EX_MEM_opcode,MEM_WB_opcode,
                                 ID_inst,ID_EX_rs1,ID_EX_rs2,EX_MEM_rd,MEM_WB_rd,is_branch,pc,rs1_data_control);
+
 assign for_ID_EX_data1=(ForwardA==2'b01)?EX_MEM_result:
                        (ForwardA==2'b10)?MEM_WB_result:
                        ID_EX_data1;
@@ -90,6 +92,17 @@ assign for_ID_EX_data2=(ForwardB==2'b01)?EX_MEM_result:
                        ID_EX_data2;
 
 assign flush=is_branch^ID_EX_prediction;
+
+assign halt=(MEM_WB_opcode==7'b0000000);
+
+always@(rst or ID_EX_opcode)begin
+    if(rst)
+        halt_happen=0;
+    else if(ID_EX_opcode==7'b0000000)
+        halt_happen=1;
+    else
+        halt_happen=halt_happen;
+end
 
 always@(predictin or rst or flush)begin
     if(rst)
@@ -101,10 +114,10 @@ always@(predictin or rst or flush)begin
 
 end
 
-always@(inst or rst or flush)begin
+always@(inst or rst or flush or halt_happen)begin
     if(rst)
         IF_ID_inst={25{0},`NOP_opcode};
-    else if(flush)
+    else if(flush || halt_happen)
         IF_ID_inst={25{0},`NOP_opcode};
     else
         IF_ID_inst=inst;
@@ -116,7 +129,7 @@ always @(posedge clk or rst) begin
         // clear all registers for pipeline
         //記得初始值得inst會是 addi x0 x0 0
     end
-    else if(flush)begin
+    else if(flush or halt_happen)begin
          // ID -> EX
         ID_EX_pc <= 0;
         ID_EX_opcode <= `NOP_opcode;
