@@ -1,5 +1,5 @@
 //到時候pc_branch只有在flush時才要傳回來，要把正確的pc傳過來。
-//flush訊號為is_branch^EX_MEM_prediction)(應該)
+//flush訊號為EX_MEM and is_branch^EX_MEM_prediction)(應該)
 
 
 module IF (cpc, clk, rst, pc_branch, is_branch,NOP,flush,prediction,control_pc);

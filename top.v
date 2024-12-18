@@ -68,7 +68,7 @@ reg        MEM_WB_mem_rw;
 IF IF(pc, clk, rst, EX_MEM_pc_branch, EX_MEM_is_branch,NOP,flush,IF_ID_prediction,control_pc);
 ID ID(rs1_data_control,opcode,data1, data2, rd, func3, func7, imm, clk, rst,IF_ID_inst, wdata, MEM_WB_rd, MEM_WB_opcode,rs1_addr_control);
 EX EX(pc_branch, is_branch, result, mem_rw, is_load, clk, rst, ID_EX_opcode, ID_EX_data1, ID_EX_data2, ID_EX_func3, ID_EX_func7, ID_EX_imm, ID_EX_pc);
-
+assign flush=is_branch^ID_EX_prediction;
 // MEM Stage
 assign mem_data = (EX_MEM_mem_rw)?  EX_MEM_data2 : 64'bz ;
 
@@ -76,21 +76,25 @@ WB WB(wdata, MEM_WB_is_load, MEM_WB_result, MEM_WB_mem_data);
 
 Controller Controller(control_pc,rs1_addr_control,predictino,NOP,flush,clk,rst,ID_EX_opcode,EX_MEM_opcode,MEM_WB_opcode,
                                 ID_inst,ID_EX_rs1,ID_EX_rs2,EX_MEM_rd,MEM_WB_rd,is_branch,pc,rs1_data_control);
-always@(predictin or rst)begin
+always@(predictin or rst or flush)begin
     if(rst)
+        IF_ID_prediction=0;
+    else if(flush)
         IF_ID_prediction=0;
     else
         IF_ID_prediction=predictin;
 
 end
 
-always@(inst or rst)begin
+always@(inst or rst or flush)begin
     if(rst)
+        IF_ID_inst=0;
+    else if(flush)
         IF_ID_inst=0;
     else
         IF_ID_inst=inst;
 end
-always @(posedge clk or rst or flush) begin
+always @(posedge clk or rst) begin
     if (rst) begin
         // clear all registers for pipeline
     end
