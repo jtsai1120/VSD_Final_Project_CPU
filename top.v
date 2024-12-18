@@ -28,6 +28,11 @@ wire        NOP,flush,predictin;
 wire [63:0] rs1_data_control;        
 wire [4:0]  rs1_addr_control;
 wire [31:0] control_pc;
+wire [1:0]  ForwardA,ForwardB;
+wire [63:0] for_ID_EX_data1;
+wire [63:0] for_ID_EX_data2;
+
+
 // Pipelined Registers for IF/ID
 reg [31:0] IF_ID_pc;
 reg [31:0] IF_ID_inst;//present useless
@@ -67,15 +72,25 @@ reg        MEM_WB_mem_rw;
 
 IF IF(pc, clk, rst, EX_MEM_pc_branch, EX_MEM_is_branch,NOP,flush,IF_ID_prediction,control_pc);
 ID ID(rs1_data_control,opcode,data1, data2, rd, func3, func7, imm, clk, rst,IF_ID_inst, wdata, MEM_WB_rd, MEM_WB_opcode,rs1_addr_control);
-EX EX(pc_branch, is_branch, result, mem_rw, is_load, clk, rst, ID_EX_opcode, ID_EX_data1, ID_EX_data2, ID_EX_func3, ID_EX_func7, ID_EX_imm, ID_EX_pc);
-assign flush=is_branch^ID_EX_prediction;
+EX EX(pc_branch, is_branch, result, mem_rw, is_load, clk, rst, ID_EX_opcode, for_ID_EX_data1, for_ID_EX_data2, ID_EX_func3, ID_EX_func7, ID_EX_imm, ID_EX_pc);
+
 // MEM Stage
 assign mem_data = (EX_MEM_mem_rw)?  EX_MEM_data2 : 64'bz ;
 
 WB WB(wdata, MEM_WB_is_load, MEM_WB_result, MEM_WB_mem_data);
 
-Controller Controller(control_pc,rs1_addr_control,predictino,NOP,flush,clk,rst,ID_EX_opcode,EX_MEM_opcode,MEM_WB_opcode,
+//controller
+Controller Controller(ForwardA,ForwardB,control_pc,rs1_addr_control,predictino,NOP,clk,rst,is_load,ID_EX_opcode,EX_MEM_opcode,MEM_WB_opcode,
                                 ID_inst,ID_EX_rs1,ID_EX_rs2,EX_MEM_rd,MEM_WB_rd,is_branch,pc,rs1_data_control);
+assign for_ID_EX_data1=(ForwardA==2'b01)?EX_MEM_result:
+                       (ForwardA==2'b10)?MEM_WB_result:
+                       ID_EX_data1;
+assign for_ID_EX_data2=(ForwardB==2'b01)?EX_MEM_result:
+                       (ForwardB==2'b10)?MEM_WB_result:
+                       ID_EX_data2;
+
+assign flush=is_branch^ID_EX_prediction;
+
 always@(predictin or rst or flush)begin
     if(rst)
         IF_ID_prediction=0;
@@ -94,6 +109,8 @@ always@(inst or rst or flush)begin
     else
         IF_ID_inst=inst;
 end
+
+//pipeline
 always @(posedge clk or rst) begin
     if (rst) begin
         // clear all registers for pipeline
