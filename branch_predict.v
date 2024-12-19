@@ -26,7 +26,7 @@ module gshare_predictor (
     assign update_index = update_address ^ GHR;
     integer i;
     // 預測邏輯
-    always @(start or rst) begin
+    always @(*) begin
         if(rst) prediction=0;
         else if (start) prediction = ((BHT[index] >= 2'b10)||(opcode==1100111|| 1101111)); // 10 或 11 預測跳轉
         else 
