@@ -10,7 +10,7 @@
 `define NOP_func3 000
 `define NOP_imm 000000000000
 `define NOP_func7 0000000
-module top (halt,mem_data, EX_MEM_mem_rw, EX_MEM_result, pc, clk, rst, inst);
+module top (halt,mem_data, EX_MEM_mem_rw, out_result, pc, clk, rst, inst);
 
 inout [63:0] mem_data;
 input clk, rst;
@@ -18,7 +18,7 @@ input [31:0] inst;
 
 output [31:0] pc;
 output EX_MEM_mem_rw;
-output EX_MEM_result;
+output out_result;
 output halt;
 
 wire [63:0] imm;
@@ -78,7 +78,7 @@ EX EX(pc_branch, is_branch, result, mem_rw, is_load, clk, rst, ID_EX_opcode, for
 
 // MEM Stage
 assign mem_data = (EX_MEM_mem_rw)?  EX_MEM_data2 : 64'bz ;
-
+assign out_result=(EX_MEM_result<=9184)?EX_MEM_result:0;
 WB WB(wdata, MEM_WB_is_load, MEM_WB_result, MEM_WB_mem_data);
 
 //controller
