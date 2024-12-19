@@ -55,7 +55,7 @@ reg        ID_EX_prediction;
 reg [6:0]  EX_MEM_opcode;
 reg [31:0] EX_MEM_pc_branch;
 reg [31:0] EX_MEM_pc;
-reg        EX_MEM_is_branch; // called Zero in ALU
+reg        EX_MEM_is_branch; // called Zero in ALU (this signal present useless)
 reg [4:0]  EX_MEM_rd;
 reg [63:0] EX_MEM_result;
 reg [63:0] EX_MEM_data2;
@@ -72,7 +72,7 @@ reg [63:0] MEM_WB_mem_data;
 reg        MEM_WB_mem_rw;
 
 
-IF IF(pc, clk, rst, EX_MEM_pc_branch, EX_MEM_is_branch,NOP,flush,IF_ID_prediction,control_pc);
+IF IF(pc, clk, rst, EX_MEM_pc_branch,NOP,flush,IF_ID_prediction,control_pc);
 ID ID(rs1_data_control,opcode,data1, data2, rd, func3, func7, imm, clk, rst,IF_ID_inst, wdata, MEM_WB_rd, MEM_WB_opcode,rs1_addr_control);
 EX EX(pc_branch, is_branch, result, mem_rw, is_load, clk, rst, ID_EX_opcode, for_ID_EX_data1, for_ID_EX_data2, ID_EX_func3, ID_EX_func7, ID_EX_imm, ID_EX_pc);
 

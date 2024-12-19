@@ -1,13 +1,11 @@
 //到時候pc_branch只有在flush時才要傳回來，要把正確的pc傳過來。
 //flush訊號為EX_MEM and is_branch^EX_MEM_prediction)(應該)
 
-
-module IF (cpc, clk, rst, pc_branch, is_branch,NOP,flush,prediction,control_pc);
+module IF (cpc, clk, rst, pc_branch,NOP,flush,prediction,control_pc);
 
 input [31:0] pc_branch;
-input is_branch;
 input clk, rst;
-input NOP,flush;
+input NOP,flush,prediction;
 input [31:0] control_pc;
 output reg [31:0] cpc;
 
