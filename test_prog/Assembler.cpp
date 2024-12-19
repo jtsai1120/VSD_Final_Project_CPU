@@ -11,8 +11,6 @@
 
 using namespace std;
 
-const int MAX_LINE = 1000;
-
 int actual_line_number;
 vector<pair<string,int> > labels;
 
@@ -242,7 +240,7 @@ int main() {
     actual_line_number = 0;
 
     // 先把所有 label 都讀出來
-    for (int line_number = 0; line_number < Mnemonics_lines.size(); line_number++) {
+    for (int line_number = 0; line_number < static_cast<int>(Mnemonics_lines.size()); line_number++) {
         auto line = Mnemonics_lines[line_number];
         if (line[0] != ' ') { // labels
             auto label = line.substr(0, line.find(':'));
@@ -256,7 +254,7 @@ int main() {
 
     actual_line_number = 0;
 
-    for (int line_number = 0; line_number < Mnemonics_lines.size(); line_number++) {
+    for (int line_number = 0; line_number < static_cast<int>(Mnemonics_lines.size()); line_number++) {
         auto line = Mnemonics_lines[line_number];
         if (line[0] != ' ') { // labels
             continue;
