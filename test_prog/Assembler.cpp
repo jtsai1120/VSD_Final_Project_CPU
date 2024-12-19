@@ -3,53 +3,58 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <cstdlib>
+#include <algorithm>
+#include <map>
+#include <cassert>
+#include <iomanip>
 
 using namespace std;
 
-#define MAX_LINE 1000
+const int MAX_LINE = 1000;
 
 int actual_line_number;
+vector<pair<string,int> > labels;
 
-int reg2num(string reg) {
-    if (reg == "x0") return 0;
-    if (reg == "x1" || reg == "ra") return 1;
-    if (reg == "x2" || reg == "sp") return 2;
-    if (reg == "x3" || reg == "gp") return 3;
-    if (reg == "x4" || reg == "tp") return 4;
-    if (reg == "x5" || reg == "t0") return 5;
-    if (reg == "x6" || reg == "t1") return 6;
-    if (reg == "x7" || reg == "t2") return 7;
-    if (reg == "x8" || reg == "s0" || reg == "fp") return 8;
-    if (reg == "x9" || reg == "s1") return 9;
-    if (reg == "x10" || reg == "a0") return 10;
-    if (reg == "x11" || reg == "a1") return 11;
-    if (reg == "x12" || reg == "a2") return 12;
-    if (reg == "x13" || reg == "a3") return 13;
-    if (reg == "x14" || reg == "a4") return 14;
-    if (reg == "x15" || reg == "a5") return 15;
-    if (reg == "x16" || reg == "a6") return 16;
-    if (reg == "x17" || reg == "a7") return 17;
-    if (reg == "x18" || reg == "s2") return 18;
-    if (reg == "x19" || reg == "s3") return 19;
-    if (reg == "x20" || reg == "s4") return 20;
-    if (reg == "x21" || reg == "s5") return 21;
-    if (reg == "x22" || reg == "s6") return 22;
-    if (reg == "x23" || reg == "s7") return 23;
-    if (reg == "x24" || reg == "s8") return 24;
-    if (reg == "x25" || reg == "s9") return 25;
-    if (reg == "x26" || reg == "s10") return 26;
-    if (reg == "x27" || reg == "s11") return 27;
-    if (reg == "x28" || reg == "t3") return 28;
-    if (reg == "x29" || reg == "t4") return 29;
-    if (reg == "x30" || reg == "t5") return 30;
-    if (reg == "x31" || reg == "t6") return 31;
-    return -1;
+string dec2bin(int num, int len = 5) {
+    string bin(len, '0');
+    for (int i = len - 1; i >= 0; --i) {
+        bin[i] = (num & 1) ? '1' : '0';
+        num >>= 1;
+    }
+    return bin;
+}
+
+static const map<string, int> reg_map = {
+    {"x0", 0}, {"x1", 1}, {"ra", 1}, {"x2", 2}, {"sp", 2}, {"x3", 3}, {"gp", 3},
+    {"x4", 4}, {"tp", 4}, {"x5", 5}, {"t0", 5}, {"x6", 6}, {"t1", 6}, {"x7", 7},
+    {"t2", 7}, {"x8", 8}, {"s0", 8}, {"fp", 8}, {"x9", 9}, {"s1", 9}, {"x10", 10},
+    {"a0", 10}, {"x11", 11}, {"a1", 11}, {"x12", 12}, {"a2", 12}, {"x13", 13},
+    {"a3", 13}, {"x14", 14}, {"a4", 14}, {"x15", 15}, {"a5", 15}, {"x16", 16},
+    {"a6", 16}, {"x17", 17}, {"a7", 17}, {"x18", 18}, {"s2", 18}, {"x19", 19},
+    {"s3", 19}, {"x20", 20}, {"s4", 20}, {"x21", 21}, {"s5", 21}, {"x22", 22},
+    {"s6", 22}, {"x23", 23}, {"s7", 23}, {"x24", 24}, {"s8", 24}, {"x25", 25},
+    {"s9", 25}, {"x26", 26}, {"s10", 26}, {"x27", 27}, {"s11", 27}, {"x28", 28},
+    {"t3", 28}, {"x29", 29}, {"t4", 29}, {"x30", 30}, {"t5", 30}, {"x31", 31},
+    {"t6", 31}
+};
+
+string reg2bin(string reg) {
+    auto it = reg_map.find(reg);
+    if (it != reg_map.end()) {
+        return dec2bin(it->second);
+    } else {
+        cout << "Error: Unknown register : " << reg << endl;
+        assert(0);
+    }
 }
 
 string Mnemonic2MachineCode(vector<string> substrings) {
     string machine_code_line = "";
-    string opcode, rs1, rs2, rd, imm, shamt, funct3, funct7;
+    string opcode, rs1, rs2, rd, shamt, funct3, funct7;
+    string imm_11_0, imm_11_5, imm_4_0, imm_12, imm_10_5, imm_4_1, imm_11, imm_31_12, imm_20, imm_10_1, imm_19_12;
     auto operation = substrings[0];
+
     if (operation == "add" || operation == "sub" || operation == "and" || operation == "or" || operation == "xor" || operation == "sll" || operation == "srl" || operation == "sra" || operation == "slt" || operation == "sltu") {
         // R-type
         opcode = (operation == "slt" || operation == "sltu") ? "0110011" : "0000011";
@@ -61,28 +66,142 @@ string Mnemonic2MachineCode(vector<string> substrings) {
                 (operation == "or") ? "110" :
                 (operation == "and") ? "111" : "000";
         funct7 = (operation == "sub" || operation == "sra")? "0100000" : "0000000";
-        rd = reg2num(substrings[1]);
-        rs1 = reg2num(substrings[2]);
-        rs2 = reg2num(substrings[3]);
-    } else if (operation == "addi" || operation == "slti" || operation == "sltiu" || operation == "xori" || operation == "ori" || operation == "andi" || operation == "slli" || operation == "srli" || operation == "srai") {
+        rd = reg2bin(substrings[1]);
+        rs1 = reg2bin(substrings[2]);
+        rs2 = reg2bin(substrings[3]);
+        machine_code_line = funct7 + rs2 + rs1 + funct3 + rd + opcode;
+        opcode = "0110011";
+    } else if (operation == "slli" || operation == "srli" || operation == "srai" || operation == "addi" || operation == "xori" || operation == "ori" || operation == "andi" || operation == "slti" || operation == "sltiu") {
         // I-type
         opcode = "0010011";
         funct3 = (operation == "addi") ? "000" :
-                (operation == "slti") ? "010" :
-                (operation == "sltiu") ? "011" :
                 (operation == "xori") ? "100" :
                 (operation == "ori") ? "110" :
                 (operation == "andi") ? "111" :
+                (operation == "slti") ? "010" :
+                (operation == "sltiu") ? "011" :
                 (operation == "slli") ? "001" :
-                (operation == "srli") ? "101" :
-                (operation == "srai") ? "101" : "000";
-        funct7 = (operation == "srai") ? "0100000" : "0000000";
-        rd = reg2num(substrings[1]);
-        rs1 = reg2num(substrings[2]);
-        imm = substrings[3];
-    } else if (operation == "lb" || operation == "lh" || operation == "lw" || operation == "lbu" || operation == "lhu") {
+                (operation == "srli" || operation == "srai") ? "101" : "000";
+        rd = reg2bin(substrings[1]);
+        rs1 = reg2bin(substrings[2]);
+        imm_11_0 = dec2bin(stoi(substrings[3]), 12);
+        machine_code_line = imm_11_0 + rs1 + funct3 + rd + opcode;
+    } else if (operation == "lb" || operation == "lh" || operation == "lw" || operation == "ld" || operation == "lbu" || operation == "lhu") {
+        // I-type
+        opcode = "0000011";
+        funct3 = (operation == "lb") ? "000" :
+                (operation == "lh") ? "001" :
+                (operation == "lw") ? "010" :
+                (operation == "ld") ? "011" :
+                (operation == "lbu") ? "100" :
+                (operation == "lhu") ? "101" : "000";
+        rd = reg2bin(substrings[1]);
+        auto open_bracket = substrings[2].find('('); // 找到 '(' 的位置
+        auto close_bracket = substrings[2].find(')'); // 找到 ')' 的位置
+        auto offset_str = substrings[2].substr(0, open_bracket); // 提取 "offset"
+        auto reg_str = substrings[2].substr(open_bracket + 1, close_bracket - open_bracket - 1); // 提取 "reg"
 
+        rs1 = reg2bin(reg_str);
+        imm_11_0 = dec2bin(stoi(offset_str), 12);
+        machine_code_line = imm_11_0 + rs1 + funct3 + rd + opcode;
+     } else if (operation == "sb" || operation == "sh" || operation == "sw" || operation == "sd") {
+        // S-type
+        opcode = "0100011";
+        funct3 = (operation == "sb") ? "000" :
+                (operation == "sh") ? "001" :
+                (operation == "sw") ? "010" :
+                (operation == "sd") ? "011" : "000";
+        rs2 = reg2bin(substrings[1]);
+        auto open_bracket = substrings[2].find('('); // 找到 '(' 的位置
+        auto close_bracket = substrings[2].find(')'); // 找到 ')' 的位置
+        auto offset_str = substrings[2].substr(0, open_bracket); // 提取 "offset"
+        auto reg_str = substrings[2].substr(open_bracket + 1, close_bracket - open_bracket - 1); // 提取 "reg"
+
+        rs1 = reg2bin(reg_str);
+        auto imm_tmp = dec2bin(stoi(offset_str), 12);
+        imm_11_5 = imm_tmp.substr(0, 7);
+        imm_4_0 = imm_tmp.substr(7, 5);
+        machine_code_line = imm_11_5 + rs2 + rs1 + funct3 + imm_4_0 + opcode;
+    } else if (operation == "beq" || operation == "bne" || operation == "blt" || operation == "bge" || operation == "bltu" || operation == "bgeu") {
+        // B-type
+        opcode = "1100011";
+        funct3 = (operation == "beq") ? "000" :
+                (operation == "bne") ? "001" :
+                (operation == "blt") ? "100" :
+                (operation == "bge") ? "101" :
+                (operation == "bltu") ? "110" :
+                (operation == "bgeu") ? "111" : "000";
+        rs1 = reg2bin(substrings[1]);
+        rs2 = reg2bin(substrings[2]);
+        for (auto l : labels) {
+            if (l.first == substrings[3]) {
+                auto imm_tmp = dec2bin(4*(l.second - actual_line_number), 13);
+                imm_12 = imm_tmp.substr(0, 1);
+                imm_10_5 = imm_tmp.substr(2, 6);
+                imm_4_1 = imm_tmp.substr(8, 4);
+                imm_11 = imm_tmp.substr(1, 1);
+                machine_code_line = imm_12 + imm_10_5 + rs2 + rs1 + funct3 + imm_4_1 + imm_11 + opcode;
+                return machine_code_line;
+            }
+        }
+        cout << "Error: Unknown label : " << substrings[3] << endl;
+        assert(0);
+    } else if (operation == "mul" || operation == "div") {
+        // R-type
+        opcode = "0110011";
+        funct3 = (operation == "mul") ? "000" :
+                (operation == "div") ? "100" : "000";
+        funct7 = "0000001";
+        rd = reg2bin(substrings[1]);  
+        rs1 = reg2bin(substrings[2]);
+        rs2 = reg2bin(substrings[3]);
+        machine_code_line = funct7 + rs2 + rs1 + funct3 + rd + opcode;      
+    } else if (operation == "jalr") {
+        // I-type
+        opcode = "1100111";
+        funct3 = "000";
+        rd = reg2bin(substrings[1]);
+        rs1 = reg2bin(substrings[2]);
+        imm_11_0 = dec2bin(4*(actual_line_number + stoi(substrings[3])), 12);
+        machine_code_line = imm_11_0 + rs1 + funct3 + rd + opcode;
+    } else if (operation == "jal") {
+        // J-type
+        opcode = "1101111";
+        rd = reg2bin(substrings[1]);
+        for (auto l : labels) {
+            if (l.first == substrings[2]) {
+                auto imm_tmp = dec2bin(4*(l.second - actual_line_number), 21);
+                imm_20 = imm_tmp.substr(0, 1);
+                imm_10_1 = imm_tmp.substr(10, 10);
+                imm_11 = imm_tmp.substr(9, 1);
+                imm_19_12 = imm_tmp.substr(1, 8);
+                machine_code_line = imm_20 + imm_10_1 + imm_11 + imm_19_12 + rd + opcode;
+                return machine_code_line;
+            }
+        }
+        cout << "Error: Unknown label : " << substrings[2] << endl;
+        assert(0);
+    } else if (operation == "lui" || operation == "auipc") {
+        // U-type
+        opcode = (operation == "lui") ? "0110111" : "0010111";
+        rd = reg2bin(substrings[1]);
+        imm_31_12 = dec2bin(stoi(substrings[2]), 20);
+        machine_code_line = imm_31_12 + rd + opcode;
+    } else if (operation == "halt") {
+        machine_code_line = "00000000000000000000000000000000";
+    } else if (operation == "nop") {
+        // nop = addi x0, x0, 0
+        opcode = "0010011";
+        funct3 = "000";
+        rd = reg2bin("x0");
+        rs1 = reg2bin("x0");
+        imm_11_0 = dec2bin(0, 12);
+        machine_code_line = imm_11_0 + rs1 + funct3 + rd + opcode;
+    } else {
+        cout << "Error: Unknown operation : " << operation << endl;
+        assert(0);
     }
+    return machine_code_line;
 }
 
 int main() {
@@ -108,20 +227,39 @@ int main() {
     vector<string> Mnemonics_lines;
     string tmpstr;
     while (getline(Mnemonic_file_stream, tmpstr)) {
-        if (tmpstr.empty()) continue;
+        if (tmpstr.empty()) continue; 
+        auto startPos = tmpstr.find_first_not_of(" \t");
+        // 如果全是空格或 tab，則跳過
+        if (startPos == std::string::npos) continue;
+        // 檢查剩餘部分是否以 "//" 開頭
+        if (tmpstr.substr(startPos, 2) == "//") continue;
+
         Mnemonics_lines.push_back(tmpstr);
+        cout << tmpstr << endl;
     }
 
-    vector<pair<string,int> > labels;
-
-    int line_number = 0;
+    labels.clear();
     actual_line_number = 0;
-    for (; line_number < Mnemonics_lines.size(); line_number++) {
+
+    // 先把所有 label 都讀出來
+    for (int line_number = 0; line_number < Mnemonics_lines.size(); line_number++) {
         auto line = Mnemonics_lines[line_number];
         if (line[0] != ' ') { // labels
             auto label = line.substr(0, line.find(':'));
             labels.push_back(make_pair(label, actual_line_number));
             cout << endl << "Label: " << label << "        line: " << actual_line_number << endl;
+        } else {
+            actual_line_number++;
+        }
+    }
+    cout << endl;
+
+    actual_line_number = 0;
+
+    for (int line_number = 0; line_number < Mnemonics_lines.size(); line_number++) {
+        auto line = Mnemonics_lines[line_number];
+        if (line[0] != ' ') { // labels
+            continue;
         } else { // instructions
             auto comment_pos = line.find("//");
             if (comment_pos != std::string::npos) {
@@ -141,14 +279,29 @@ int main() {
             }
 
             // Print the results
-            for (const std::string &substr : substrings) {
+            /*for (const std::string &substr : substrings) {
                 cout << substr << " ";
             }
             cout << endl;
-
+            */
             // Generate machine code
+            cout << "Line " << actual_line_number << ": " << line << endl;
             auto machine_code_line = Mnemonic2MachineCode(substrings);
-            Machine_code_file_stream << machine_code_line << endl;
+            // Seperate machine_code_line into 8-bit chunks
+            for (int i = 0; i < 32; i += 8) {
+                Machine_code_file_stream << machine_code_line.substr(i, 8) << " ";
+            }
+            Machine_code_file_stream << "    // ";
+            string str_tmp = " ";
+            for(auto l : labels) {
+                if (l.second == actual_line_number) {
+                    str_tmp = l.first + ": ";
+                    break;
+                }
+            }
+            Machine_code_file_stream << std::left << setw(25) << setfill(' ') << str_tmp;
+            Machine_code_file_stream << Mnemonics_lines[line_number].substr(4, Mnemonics_lines[line_number].length() - 4);
+            Machine_code_file_stream << endl;
 
             actual_line_number++;
         }

@@ -2,7 +2,7 @@
 start:
     addi t0, x0, 8              // Initialize array base address pointer to 0x8
     addi t1, x0, 10             // Initialize array length to 10
-    addi t2, x0, x0             // Initialize counter i to 0
+    addi t2, x0, 0              // Initialize counter i to 0
 
 copy_value:
     beq t2, t1, end_copy_value_loop     // if i == length, end copy_value loop
@@ -13,7 +13,7 @@ copy_value:
     sd t5, 80(t4)               // Store t5 into array[i+10]
     addi t2, t2, 1              // Add counter i by 1
     jal x0, copy_value          // Jump to start of copy_value
-     
+
 end_copy_value_loop:
     addi t0, x0, 88             // Initialize array base address pointer to 88
     addi t2, x0, 0              // Initialize outer loop counter i to 0
