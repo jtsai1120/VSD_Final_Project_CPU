@@ -2,10 +2,10 @@
 `include "ForwardingUnit.v"
 
 module Controller (ForwardA,ForwardB,new_pc,rs1_addr,prediction,NOP,clk,rst,is_load,ID_EX_opcode,EX_MEM_opcode,MEM_WB_opcode,
-                                ID_inst,ID_EX_rs1,ID_EX_rs2,EX_MEM_rd,MEM_WB_rd,is_branch,pc,rs1_data);
+                                ID_inst,ID_EX_rs1,ID_EX_rs2,EX_MEM_rd,MEM_WB_rd,is_branch,pc,EX_MEM_pc,rs1_data);
 input [6:0]ID_EX_opcode,EX_MEM_opcode,MEM_WB_opcode;
 input [4:0]ID_EX_rs1,ID_EX_rs2,EX_MEM_rd,MEM_WB_rd;
-input [31:0]ID_inst,pc;
+input [31:0]ID_inst,pc,EX_MEM_pc;
 input       is_branch;
 input clk,rst;
 input [63:0]rs1_data;
@@ -27,7 +27,8 @@ ForwardingUnit FU(
 .ID_EX_rs1(ID_EX_rs1),         
 .ID_EX_rs2(ID_EX_rs2),       
 .EX_MEM_rd(EX_MEM_rd),         
-.MEM_WB_rd(MEM_WB_rd),        
+.MEM_WB_rd(MEM_WB_rd),
+.rst(rst),        
 .EX_MEM_RegWrite(EX_MEM_RegWrite),   
 .MEM_WB_RegWrite(MEM_WB_RegWrite),  
 .is_load(is_load), 
@@ -46,6 +47,7 @@ assign rs1_addr=inst[19:15];
 gshare_predictor predict(
     .start(into_predic),
     .update(update),
+    .update_address(EX_MEM_pc[7:0]);
     .rst(rst),
     .branch_address(pc[7:0]),
     .opcode(inst[6:0]),

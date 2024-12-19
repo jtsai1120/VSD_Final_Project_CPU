@@ -36,7 +36,7 @@ reg        halt_happen;
 
 // Pipelined Registers for IF/ID
 reg [31:0] IF_ID_pc;
-reg [31:0] IF_ID_inst;//present useless
+reg [31:0] IF_ID_inst;
 reg        IF_ID_prediction;
 
 
@@ -54,13 +54,14 @@ reg        ID_EX_prediction;
 // Pipelined Registers for EX/MEM
 reg [6:0]  EX_MEM_opcode;
 reg [31:0] EX_MEM_pc_branch;
+reg [31:0] EX_MEM_pc;
 reg        EX_MEM_is_branch; // called Zero in ALU
 reg [4:0]  EX_MEM_rd;
 reg [63:0] EX_MEM_result;
 reg [63:0] EX_MEM_data2;
 reg        EX_MEM_mem_rw;
 reg        EX_MEM_is_load;
-reg        EX_MEM_prediction;
+
 
 // Pipelined Registers for MEM/WB
 reg [6:0]  MEM_WB_opcode;
@@ -82,13 +83,13 @@ WB WB(wdata, MEM_WB_is_load, MEM_WB_result, MEM_WB_mem_data);
 
 //controller
 Controller Controller(ForwardA,ForwardB,control_pc,rs1_addr_control,predictino,NOP,clk,rst,is_load,ID_EX_opcode,EX_MEM_opcode,MEM_WB_opcode,
-                                ID_inst,ID_EX_rs1,ID_EX_rs2,EX_MEM_rd,MEM_WB_rd,is_branch,pc,rs1_data_control);
+                                ID_inst,ID_EX_rs1,ID_EX_rs2,EX_MEM_rd,MEM_WB_rd,is_branch,pc,EX_MEM_pc,rs1_data_control);
 
 assign for_ID_EX_data1=(ForwardA==2'b01)?EX_MEM_result:
-                       (ForwardA==2'b10)?MEM_WB_result:
+                       (ForwardA==2'b10)?wdata:
                        ID_EX_data1;
 assign for_ID_EX_data2=(ForwardB==2'b01)?EX_MEM_result:
-                       (ForwardB==2'b10)?MEM_WB_result:
+                       (ForwardB==2'b10)?wdata:
                        ID_EX_data2;
 
 assign flush=is_branch^ID_EX_prediction;
@@ -128,6 +129,37 @@ always @(posedge clk or rst) begin
     if (rst) begin
         // clear all registers for pipeline
         //記得初始值得inst會是 addi x0 x0 0
+
+         // IF -> ID
+        IF_ID_pc <= 0;
+        
+        // ID -> EX
+        ID_EX_pc <= 0;
+        ID_EX_opcode <= `NOP_opcode;
+        ID_EX_imm <= `NOP_imm;
+        ID_EX_data1 <= 0;
+        ID_EX_data2 <= 0;
+        ID_EX_rd <= 0;
+        ID_EX_func3 <= 0;
+        ID_EX_func7 <= 0;
+        ID_EX_prediction <= 0;
+        // EX -> MEM
+        EX_MEM_opcode <= `NOP_opcode;
+        EX_MEM_pc_branch <= 0;
+        EX_MEM_is_branch <= 0;
+        EX_MEM_rd <= 0;
+        EX_MEM_result <= 0;
+        EX_MEM_data2 <= 0;
+        EX_MEM_mem_rw <= 0;
+        EX_MEM_is_load <= 0;
+        EX_MEM_pc<=0;
+        // MEM -> WB
+        MEM_WB_opcode <= `NOP_opcode;
+        MEM_WB_rd <= 0;
+        MEM_WB_result <= 0;
+        MEM_WB_is_load <= 0;
+        MEM_WB_mem_data <= 0;
+        MEM_WB_mem_rw <= 0;
     end
     else if(flush or halt_happen)begin
          // ID -> EX
@@ -162,7 +194,6 @@ always @(posedge clk or rst) begin
         EX_MEM_data2 <= 0;
         EX_MEM_mem_rw <= 0;
         EX_MEM_is_load <= 0;
-        ID_EX_prediction <= 0;
     else begin
         // IF -> ID
         IF_ID_pc <= pc;
@@ -186,7 +217,7 @@ always @(posedge clk or rst) begin
         EX_MEM_data2 <= ID_EX_data2;
         EX_MEM_mem_rw <= mem_rw;
         EX_MEM_is_load <= is_load;
-        ID_EX_prediction <= IF_ID_prediction;
+        EX_MEM_pc <= ID_EX_pc;
         // MEM -> WB
         MEM_WB_opcode <= EX_MEM_opcode;
         MEM_WB_rd <= EX_MEM_rd;

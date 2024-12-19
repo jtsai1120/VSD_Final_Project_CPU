@@ -61,17 +61,14 @@ output     [63:0]rs1_data_control;
 reg [63:0] RF [0:31];
 assign rs1_data_control=RF[rs1_addr_control];
 always @(posedge clk or rst or flush) begin
-    if (rst) begin
-        // clear RF
-    end 
-    else if(flush)begin
+    if (rst or flush) begin
         opcode <= NOP_opcode;
         data1 <= RF[`NOP_rs1];
         data2 <= RF[`NOP_rs2];
         rd <= `NOP_rd;
         func3 <= `NOP_func3;
         func7 <= `NOP_func7 ;
-    end
+    end 
     else begin
         opcode <= `OP;
         data1 <= RF[`R_rs1];
@@ -83,11 +80,10 @@ always @(posedge clk or rst or flush) begin
 end
 
 always @(posedge clk or rst or flush) begin
-    if (rst) begin
-        imm_ext <= 0;
+    if (rst or flush) begin
+        imm_ext <= 64{0};
     end
-    else if(flush)
-        imm_ext <=64{0};
+
     else begin
         case (`OP)
             0010011: begin // I Type (operation)
@@ -156,10 +152,11 @@ always @(negedge clk or rst) begin
         RF[30] <= 64'b0;
         RF[31] <= 64'b0;
     end
-    else begin
-        RF[0] <= 64'b0;
+    else begin  
+        
         // Store 跟 Branch 不用 write back
-        if (opcode != 7'b0100011 && opcode != 7'b1100011) RF[wrd] <= wdata;
+        if(wrd==0) RF[wrd] <=0;
+        else if (opcode != 7'b0100011 && opcode != 7'b1100011) RF[wrd] <= wdata;
         else RF[wrd] <= RF[wrd];
     end
 
