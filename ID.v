@@ -60,7 +60,7 @@ output     [63:0]rs1_data_control;
 
 reg [63:0] RF [0:31];
 assign rs1_data_control=(wrd==rs1_addr_control)?wdata:RF[rs1_addr_control];
-always @(posedge clk or rst or flush) begin
+always @(posedge clk or posedge rst or flush) begin
     if (rst || flush) begin
         opcode <= `NOP_opcode;
         data1 <= RF[`NOP_rs1];
@@ -79,7 +79,7 @@ always @(posedge clk or rst or flush) begin
     end
 end
 
-always @(posedge clk or rst or flush) begin
+always @(posedge clk or posedge rst or flush) begin
     if (rst || flush) begin
         imm_ext <= 0;
     end
@@ -116,16 +116,16 @@ always @(posedge clk or rst or flush) begin
     end
 end
 
-always @(negedge clk or rst) begin
+always @(negedge clk or posedge rst) begin
     if (rst) begin
         RF[0] <= 64'd0;
-        RF[1] <= 64'd1;
-        RF[2] <= 64'd2;
-        RF[3] <= 64'd3;
-        RF[4] <= 64'd4;
-        RF[5] <= 64'd5;
-        RF[6] <= 64'd6;
-        RF[7] <= 64'd7;
+        RF[1] <= 64'd0;
+        RF[2] <= 64'd0;
+        RF[3] <= 64'd0;
+        RF[4] <= 64'd0;
+        RF[5] <= 64'd0;
+        RF[6] <= 64'd0;
+        RF[7] <= 64'd0;
         RF[8] <= 64'b0;
         RF[9] <= 64'b0;
         RF[10] <= 64'b0;
@@ -153,7 +153,7 @@ always @(negedge clk or rst) begin
     end
     else begin  
         
-        // Store �?? Branch 不用 write back
+        // Store �?? Branch 不用 write back
         if(wrd==0) RF[wrd] <=0;
         else if (opcode != 7'b0100011 && opcode != 7'b1100011) RF[wrd] <= wdata;
         else RF[wrd] <= RF[wrd];

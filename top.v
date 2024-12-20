@@ -125,7 +125,7 @@ always@(inst or rst or flush or halt_happen)begin
 end
 
 //pipeline
-always @(posedge clk or rst) begin
+always @(posedge clk or posedge rst) begin
     if (rst) begin
         // clear all registers for pipeline
         //記得初始值得inst會是 addi x0 x0 0

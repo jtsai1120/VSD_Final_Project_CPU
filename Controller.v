@@ -57,11 +57,11 @@ gshare_predictor predict(
 
 
 always@(posedge into_predic)begin
-    if(inst[6:0]==1100011) //branch
+    if(inst[6:0]==7'b1100011) //branch
         new_pc<=pc+{{19{inst[31]}}, inst[31], inst[7], inst[30:25], inst[11:8],1'b0};
-    else if(inst[6:0]==1101111)//jal
+    else if(inst[6:0]==7'b1101111)//jal
         new_pc<=pc+{{11{inst[31]}}, inst[31], inst[19:12], inst[20], inst[30:21], 1'b0};
-    else if(inst[6:0]==1100111)//jalr
+    else if(inst[6:0]==7'b1100111)//jalr
         new_pc<=rs1_data[31:0]+{{20{inst[31]}}, inst[31:20]};
     else
         new_pc<=pc;

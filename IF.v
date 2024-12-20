@@ -12,7 +12,7 @@ output reg [31:0] cpc;
 wire [31:0] npc;
 assign npc = cpc + 4;
 
-always @(posedge clk or rst) begin
+always @(posedge clk or posedge rst) begin
     if (rst) begin
         cpc <= 0;
     end
