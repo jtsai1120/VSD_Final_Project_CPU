@@ -28,7 +28,7 @@ module gshare_predictor (
     // 預測邏輯
     always @(*) begin
         if(rst) prediction=0;
-        else if (start) prediction = ((BHT[index] >= 2'b10)||(opcode==7'b1100111|| 7'b1101111)); // 10 或 11 預測跳轉
+        else if (start) prediction = ((BHT[index] >= 2'b10)||(opcode==7'b1100111)|| (opcode == 7'b1101111))?1:0; // 10 或 11 預測跳轉
         else prediction = 0;
     end
     
@@ -48,7 +48,7 @@ module gshare_predictor (
             else BHT[update_index] <= BHT[update_index];
         end
     end
-    always@(posedge update or rst)begin
+    always@(posedge update or posedge rst)begin
         // 更新 GHR
         if(rst) GHR <= 0;
         else    GHR <= {GHR[GHR_BITS-2:0], branch_taken};
