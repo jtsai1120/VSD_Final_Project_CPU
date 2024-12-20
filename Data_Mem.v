@@ -43,7 +43,9 @@ always @(negedge clk or rst) begin
         DM[addr+5] = mem_data[47:40];
         DM[addr+6] = mem_data[55:48];
         DM[addr+7] = mem_data[63:56];
-    end else ;
+    end else 
+        for (i = 0; i < Size; i = i + 1) begin
+            DM[i] <= DM[i];
 end
 
 
