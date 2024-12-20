@@ -34,21 +34,21 @@
 `define J_imm_19_12 inst[19:12]
 `define J_rd inst[11:7]
 
-`define NOP_opcode 0010011
-`define NOP_rs1 00000
-`define NOP_rs2 00000
-`define NOP_rd 00000
-`define NOP_func7 0000000
-`define NOP_func3 000
-`define NOP_imm 000000000000
-module ID (rs1_data_control,opcode, data1, data2, rd, func3, func7, imm_ext, clk, rst, inst, wdata, wrd, wopcode,rs1_addr,control);
+`define NOP_opcode 'b0010011
+`define NOP_rs1 'b00000
+`define NOP_rs2 'b00000
+`define NOP_rd 'b00000
+`define NOP_func7 'b0000000
+`define NOP_func3 'b000
+`define NOP_imm 'b000000000000
+module ID (rs1_data_control,opcode, data1, data2, rd, func3, func7, imm_ext, clk, rst, inst, wdata, wrd, wopcode,rs1_addr_control,flush);
 parameter R_type = 110011;
-input clk, rst;
+input clk, rst,flush;
 input [31:0] inst;
 input [63:0] wdata; // write back data
 input [4:0] wrd; // write back rd 
 input [6:0] wopcode; // write back opcode
-input [4:0]    rs1_addr_control;
+input [4:0] rs1_addr_control;
 
 output reg [6:0] opcode;
 output reg [63:0] data1, data2;
@@ -59,10 +59,10 @@ output reg [63:0]imm_ext;
 output     [63:0]rs1_data_control;
 
 reg [63:0] RF [0:31];
-assign rs1_data_control=RF[rs1_addr_control];
+assign rs1_data_control=(wrd==rs1_addr_control)?wdata:RF[rs1_addr_control];
 always @(posedge clk or rst or flush) begin
-    if (rst or flush) begin
-        opcode <= NOP_opcode;
+    if (rst || flush) begin
+        opcode <= `NOP_opcode;
         data1 <= RF[`NOP_rs1];
         data2 <= RF[`NOP_rs2];
         rd <= `NOP_rd;
@@ -80,34 +80,33 @@ always @(posedge clk or rst or flush) begin
 end
 
 always @(posedge clk or rst or flush) begin
-    if (rst or flush) begin
-        imm_ext <= 64{0};
+    if (rst || flush) begin
+        imm_ext <= 0;
     end
-
     else begin
         case (`OP)
-            0010011: begin // I Type (operation)
+            'b0010011: begin // I Type (operation)
                 imm_ext <= {{52{inst[31]}}, inst[31:20]};
             end
-            0000011: begin // I Type (operation immediate)
+            'b0000011: begin // I Type (operation immediate)
                 imm_ext <= {{52{inst[31]}}, inst[31:20]};
             end
-            1100111: begin // I Type (jalr)
+            'b1100111: begin // I Type (jalr)
                 imm_ext <= {{52{inst[31]}}, inst[31:20]};
             end
-            0100011: begin // S Type (store)
+            'b0100011: begin // S Type (store)
                 imm_ext <= {{52{inst[31]}}, inst[31:25], inst[11:7]};
             end
-            1100011: begin // B Type (branch)
+            'b1100011: begin // B Type (branch)
                 imm_ext <= {{51{inst[31]}}, inst[31], inst[7], inst[30:25], inst[11:8],1'b0};
             end
-            0110111: begin // U Type (lui)
+            'b0110111: begin // U Type (lui)
                 imm_ext <= {{32{inst[31]}}, inst[31:12], 12'b0};
             end
-            0010111: begin // U Type (auipc)
+            'b0010111: begin // U Type (auipc)
                 imm_ext <= {{32{inst[31]}}, inst[31:12], 12'b0};
             end
-            1101111: begin // J Type (jal)
+            'b1101111: begin // J Type (jal)
                 imm_ext <= {{43{inst[31]}}, inst[31], inst[19:12], inst[20], inst[30:21], 1'b0};
             end
             default: begin // Unknown or R Type (no imm)
@@ -119,14 +118,14 @@ end
 
 always @(negedge clk or rst) begin
     if (rst) begin
-        RF[0] <= 64'b0;
-        RF[1] <= 64'b0;
-        RF[2] <= 64'b0;
-        RF[3] <= 64'b0;
-        RF[4] <= 64'b0;
-        RF[5] <= 64'b0;
-        RF[6] <= 64'b0;
-        RF[7] <= 64'b0;
+        RF[0] <= 64'd0;
+        RF[1] <= 64'd1;
+        RF[2] <= 64'd2;
+        RF[3] <= 64'd3;
+        RF[4] <= 64'd4;
+        RF[5] <= 64'd5;
+        RF[6] <= 64'd6;
+        RF[7] <= 64'd7;
         RF[8] <= 64'b0;
         RF[9] <= 64'b0;
         RF[10] <= 64'b0;
@@ -154,13 +153,12 @@ always @(negedge clk or rst) begin
     end
     else begin  
         
-        // Store 跟 Branch 不用 write back
+        // Store �?? Branch 不用 write back
         if(wrd==0) RF[wrd] <=0;
         else if (opcode != 7'b0100011 && opcode != 7'b1100011) RF[wrd] <= wdata;
         else RF[wrd] <= RF[wrd];
     end
-
 end
 
 
-endmodule;
+endmodule
