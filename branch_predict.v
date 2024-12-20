@@ -10,7 +10,7 @@ module gshare_predictor (
     input rst,
     input [7:0] branch_address,update_address,  // 分支指令地址的低 8 位
     input branch_taken,          // 實際分支結果
-    input [6:0]opcode;
+    input [6:0]opcode,
     output reg prediction        // 預測結果
 );
     parameter GHR_BITS = 8;      // 全局歷史寄存器位數
@@ -28,9 +28,8 @@ module gshare_predictor (
     // 預測邏輯
     always @(*) begin
         if(rst) prediction=0;
-        else if (start) prediction = ((BHT[index] >= 2'b10)||(opcode==1100111|| 1101111)); // 10 或 11 預測跳轉
-        else 
-        prediction = 0;
+        else if (start) prediction = ((BHT[index] >= 2'b10)||(opcode==7'b1100111|| 7'b1101111)); // 10 或 11 預測跳轉
+        else prediction = 0;
     end
     
     // 更新邏輯

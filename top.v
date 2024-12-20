@@ -4,12 +4,12 @@
 `include "WB.v"
 `include "Controller.v"
 
-`define NOP_opcode 0010011
-`define NOP_rs1 00000
-`define NOP_rd 00000
-`define NOP_func3 000
-`define NOP_imm 000000000000
-`define NOP_func7 0000000
+`define NOP_opcode 'b0010011
+`define NOP_rs1 'b00000
+`define NOP_rd 'b00000
+`define NOP_func3 'b000
+`define NOP_imm 'b000000000000
+`define NOP_func7 'b0000000
 module top (halt,mem_data, EX_MEM_mem_rw, out_result, pc, clk, rst, inst);
 
 inout [63:0] mem_data;
