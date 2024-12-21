@@ -1,8 +1,6 @@
 `timescale 1ns/1ps
 //`include "ID.v"
 module ID_tb;
-
-ID ID (rs1_data_control,opcode, data1, data2, rd, func3, func7, imm_ext, clk, rst, inst, wdata, wrd, wopcode,rs1_addr_control,flush);
 reg clk, rst,flush;
 reg [31:0] inst;
 reg [63:0] wdata; // write back data
@@ -17,6 +15,8 @@ wire[2:0] func3;
 wire[6:0] func7;
 wire[63:0]imm_ext;
 wire[63:0]rs1_data_control;
+ID ID (rs1_data_control,opcode, data1, data2, rd, func3, func7, imm_ext, clk, rst, inst, wdata, wrd, wopcode,rs1_addr_control,flush);
+
 
 initial begin
     clk=0;

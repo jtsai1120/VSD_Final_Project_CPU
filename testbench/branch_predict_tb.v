@@ -2,6 +2,13 @@
 //`include "branch_predict.v"
 
 module BRA_predict;
+
+reg start,update;
+reg rst;
+reg [7:0] branch_address,update_address;  // ����誘������� 8 雿�
+reg branch_taken;          // 撖阡��蝯��
+reg [6:0]opcode;
+wire prediction;
 gshare_predictor uut(
     .start(start),
     .update(update),
@@ -12,12 +19,7 @@ gshare_predictor uut(
     .opcode(opcode),
     .prediction(prediction)        // ��葫蝯��
 );
-reg start,update;
-reg rst;
-reg [7:0] branch_address,update_address;  // ����誘������� 8 雿�
-reg branch_taken;          // 撖阡��蝯��
-reg [6:0]opcode;
-wire prediction;
+
 
 initial begin
 $monitor("time:%d prediction:%b" ,
