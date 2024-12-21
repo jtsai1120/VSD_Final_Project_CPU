@@ -55,12 +55,12 @@ initial begin : execute
     
     // Load Test Program
     `ifdef sorting
-        $readmemb("./test_prog/sort.prog", Inst_Mem.IM);
+        $readmemb("./test_prog/sort_Mnemonic.prog", Inst_Mem.IM);
         $readmemb("./test_prog/sort_data.prog", Data_Mem.DM);
     `elsif fibo
-        $readmemb("./test_prog/fibo.prog", Inst_Mem.IM);
+        $readmemb("./test_prog/fibo_Mnemonic.prog", Inst_Mem.IM);
     `else 
-        $readmemb("./test_prog/single_inst.prog", Inst_Mem.IM);
+        $readmemb("./test_prog/single_inst_Mnemonic.prog", Inst_Mem.IM);
     `endif
 
     @(halt == 1) begin
