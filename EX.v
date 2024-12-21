@@ -68,11 +68,11 @@ module ALU(
     `define REMU_func7 7'b0000001
 
     /*func7 arithmetic RV32 for MUL DIV REM*/
-    `define MULW_func7 7'b0000001	
-    `define DIVW_func7 7'b0000001	
-    `define DIVUW_func7 7'b0000001	
-    `define REMW_func7 7'b0000001	
-    `define REMUW_func7 7'b0000001	
+    `define MULW_func7 7'b0000001
+    `define DIVW_func7 7'b0000001
+    `define DIVUW_func7 7'b0000001
+    `define REMW_func7 7'b0000001
+    `define REMUW_func7 7'b0000001
 
 
 
@@ -160,7 +160,7 @@ module ALU(
     wire pc_carry;
     CLA PC_ctrl({32'd0,pc},64'd4,1'b0,next_pc,pc_carry);
 
-    always@(posedge clk or rst) begin
+    always@(*) begin
         
         case(opcode)
             `OP :  begin
@@ -203,7 +203,7 @@ module ALU(
                                 `SLT :  begin
                                             case(func7)
                                                 `SLT_func7 :  begin
-                                                        if(signed_data1<signed_data2) begin
+                                                        if($signed(data1)<$signed(data2)) begin
                                                             result = 64'h0000000000000001;
                                                         end
                                                         else begin
@@ -261,7 +261,7 @@ module ALU(
                                                         result = (data1 >> (data2));
                                                     end
                                                 `SRA_func7 :  begin
-                                                        result = signed_data1 >> (data2&64'h000000000000001F);
+                                                        result = $signed(data1) >> (data2&64'h000000000000001F);
                                                     end
                                                 `DIVU_func7 :  begin
                                                         result = quotient;
@@ -334,7 +334,7 @@ module ALU(
                                         result = {{32{data1_32[31-data2_32]}},$signed(data1_32 << (data2_32))};
                                     end
                                 `SLT :  begin
-                                        if(signed_data1_32 < signed_data2_32) begin
+                                        if($signed(data1_32) < $signed(data2_32)) begin
                                             result = 64'h0000000000000001;
                                         end
                                         else begin
@@ -512,7 +512,7 @@ module ALU(
                                                         result = {{32{data1_32[31]}},$signed($unsigned(data1_32 >> imm_32))};
                                                     end
                                                 `SRA_func7 :  begin
-                                                        result = {{32{signed_data1_32[31]}},$signed(signed_data1_32 >> (imm_32 & 64'h000000000000001F))};
+                                                        result = {{32{signed_data1_32[31]}},$signed($signed(data1_32) >> (imm_32 & 64'h000000000000001F))};
                                                     end
                                                 default :   begin
 
@@ -983,4 +983,3 @@ assign remainder = (divisor == 0) ? dividend :
 
 
 endmodule
-
