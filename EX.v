@@ -68,11 +68,11 @@ module ALU(
     `define REMU_func7 7'b0000001
 
     /*func7 arithmetic RV32 for MUL DIV REM*/
-    `define MULW_func7 7'b0000000
-    `define DIVW_func7 7'b0000000
-    `define DIVUW_func7 7'b0000000
-    `define REMW_func7 7'b0000000
-    `define REMUW_func7 7'b0000000
+    `define MULW_func7 7'b0000001	
+    `define DIVW_func7 7'b0000001	
+    `define DIVUW_func7 7'b0000001	
+    `define REMW_func7 7'b0000001	
+    `define REMUW_func7 7'b0000001	
 
 
 
