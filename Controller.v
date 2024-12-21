@@ -55,27 +55,27 @@ gshare_predictor predict(
     .prediction(prediction)
 );
 
-initial begin
+/*initial begin
     $monitor("into_predic:%b pc:%d",into_predic,pc);
-end
+end*/
 always@(into_predic or posedge rst)begin
     if(rst)
         new_pc=0;
     else if(inst[6:0]==7'b1100011) begin //branch
         new_pc=pc+{{19{inst[31]}}, inst[31], inst[7], inst[30:25], inst[11:8],1'b0};
-        $display("time %d pc:%d",$time,pc);
+       // $display("time %d pc:%d",$time,pc);
     end
     else if(inst[6:0]==7'b1101111)begin//jal
         new_pc=pc+{{11{inst[31]}}, inst[31], inst[19:12], inst[20], inst[30:21], 1'b0};
-        $display("time %d pc:%d",$time,pc);
+        //$display("time %d pc:%d",$time,pc);
     end
     else if(inst[6:0]==7'b1100111)begin//jalr
         new_pc=rs1_data[31:0]+{{20{inst[31]}}, inst[31:20]};
-        $display("time %d pc:%d",$time,pc);
+        //$display("time %d pc:%d",$time,pc);
     end
     else    begin
         new_pc=pc;
-        $display("time %d pc:%d",$time,pc);
+        //$display("time %d pc:%d",$time,pc);
     end
 end
 
