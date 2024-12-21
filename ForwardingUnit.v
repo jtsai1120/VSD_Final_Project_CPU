@@ -3,7 +3,7 @@ module ForwardingUnit(
     input [4:0] ID_EX_rs2,       
     input [4:0] EX_MEM_rd,         
     input [4:0] MEM_WB_rd, 
-    input rst;       
+    input rst,       
     input EX_MEM_RegWrite,   
     input MEM_WB_RegWrite,  
     input is_load, 

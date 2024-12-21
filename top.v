@@ -83,7 +83,7 @@ WB WB(wdata, MEM_WB_is_load, MEM_WB_result, MEM_WB_mem_data);
 
 //controller
 Controller Controller(ForwardA,ForwardB,control_pc,rs1_addr_control,predictino,NOP,clk,rst,is_load,ID_EX_opcode,EX_MEM_opcode,MEM_WB_opcode,
-                                ID_inst,ID_EX_rs1,ID_EX_rs2,EX_MEM_rd,MEM_WB_rd,is_branch,pc,EX_MEM_pc,rs1_data_control);
+                                inst,ID_EX_rs1,ID_EX_rs2,EX_MEM_rd,MEM_WB_rd,is_branch,pc,EX_MEM_pc,rs1_data_control);
 
 assign for_ID_EX_data1=(ForwardA==2'b01)?EX_MEM_result:
                        (ForwardA==2'b10)?wdata:
