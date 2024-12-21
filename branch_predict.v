@@ -11,6 +11,7 @@ module gshare_predictor (
     input [7:0] branch_address,update_address,  // 分支指令地址的低 8 位
     input branch_taken,          // 實際分支結果
     input [6:0]opcode,
+    input [31:0]EX_MEM_pc;
     output reg prediction        // 預測結果
 );
     parameter GHR_BITS = 8;      // 全局歷史寄存器位數
@@ -33,24 +34,33 @@ module gshare_predictor (
     end
     
     // 更新邏輯
-    always @(posedge update or rst) begin
+    always @(EX_MEM_pc or posedge rst) begin
         if (rst) begin
             for (i = 0; i < BHT_SIZE; i = i + 1) begin
-                BHT[i] <= 2'b01; // 初始化為「弱不跳轉」
+                BHT[i] = 2'b01; // 初始化為「弱不跳轉」
             end 
         end
-        else if (branch_taken) begin
-            if (BHT[update_index] < 2'b11) BHT[update_index] <= BHT[update_index] + 1;
-            else BHT[update_index] <= BHT[update_index];
-        end 
-        else begin
-            if (BHT[update_index] > 2'b00) BHT[update_index] <= BHT[update_index] - 1;
-            else BHT[update_index] <= BHT[update_index];
+        else if(update) begin 
+            if (branch_taken) begin
+                if (BHT[update_index] < 2'b11) BHT[update_index] = BHT[update_index] + 1;
+                else BHT[update_index] = BHT[update_index];
+            end 
+            else begin
+                if (BHT[update_index] > 2'b00) BHT[update_index] = BHT[update_index] - 1;
+                else BHT[update_index] = BHT[update_index];
+            end
         end
+        else begin
+            for (i = 0; i < BHT_SIZE; i = i + 1) begin
+                BHT[i] = BHT[i]; // keep value
+            end 
+        end
+
     end
-    always@(posedge update or posedge rst)begin
+    always@( EX_MEM_pc or posedge rst)begin
         // 更新 GHR
-        if(rst) GHR <= 0;
-        else    GHR <= {GHR[GHR_BITS-2:0], branch_taken};
+        if(rst) GHR = 0;
+        else if(update)   GHR = {GHR[GHR_BITS-2:0], branch_taken};
+        else GHR = GHR;
     end
 endmodule
