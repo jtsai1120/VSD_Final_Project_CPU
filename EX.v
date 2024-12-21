@@ -601,6 +601,7 @@ module ALU(
                                         end
                                         else begin
                                             is_branch = 0;
+                                            pc_branch = pc + 32'd4;
                                         end
                                     end
                                 `BNE :  begin
@@ -610,6 +611,7 @@ module ALU(
                                         end
                                         else begin
                                             is_branch = 0;
+                                            pc_branch = pc + 32'd4;
                                         end
                                     end
                                 `BLT :  begin
@@ -619,6 +621,7 @@ module ALU(
                                         end
                                         else begin
                                             is_branch = 0;
+                                            pc_branch = pc + 32'd4;
                                         end
                                     end
                                 `BGE :  begin
@@ -628,6 +631,7 @@ module ALU(
                                         end
                                         else begin
                                             is_branch = 0;
+                                            pc_branch = pc + 32'd4;
                                         end
                                     end
                                 `BLTU :  begin
@@ -637,6 +641,7 @@ module ALU(
                                         end
                                         else begin
                                             is_branch = 0;
+                                            pc_branch = pc + 32'd4;
                                         end
                                     end
                                 `BGEU :  begin
@@ -646,6 +651,7 @@ module ALU(
                                         end
                                         else begin
                                             is_branch = 0;
+                                            pc_branch = pc + 32'd4;
                                         end
                                     end
                                 default :  begin
