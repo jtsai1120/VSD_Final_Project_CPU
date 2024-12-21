@@ -593,6 +593,8 @@ module ALU(
                             endcase
                     end
             `BRANCH :  begin
+                        is_load = 0;
+                        mem_rw = 0;
                         case(func3)
                                 `BEQ :  begin
                                         if(data1==data2)    begin
