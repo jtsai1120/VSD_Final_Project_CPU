@@ -57,7 +57,7 @@ output reg [2:0] func3;
 output reg [6:0] func7;
 output reg [63:0]imm_ext;
 output     [63:0]rs1_data_control;
-
+integer i;
 reg [63:0] RF [0:31];
 assign rs1_data_control=(wrd==rs1_addr_control)?wdata:RF[rs1_addr_control];
 always @(posedge clk or posedge rst or flush) begin
@@ -152,11 +152,13 @@ always @(negedge clk or posedge rst) begin
         RF[31] <= 64'b0;
     end
     else begin  
-        
         // Store �?? Branch 不用 write back
         if(wrd==0) RF[wrd] <=0;
         else if (opcode != 7'b0100011 && opcode != 7'b1100011) RF[wrd] <= wdata;
-        else RF[wrd] <= RF[wrd];
+        else begin
+            for(i=0;i<32;i=i+1)
+                RF[i]<=RF[i];
+        end;
     end
 end
 
