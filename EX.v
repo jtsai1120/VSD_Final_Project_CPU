@@ -1,5 +1,3 @@
-
-
 module ALU(
         input clk, rst,
         input [6:0] opcode,
@@ -158,7 +156,9 @@ module ALU(
     wire AUIPCcarry;
     CLA AUIPC_count({32'd0,pc},{{32{imm[19]}},imm[19:0], 12'b0},1'b0,AUIPCcount,AUIPC_carry);
 
-
+    wire [63:0] next_pc;
+    wire pc_carry;
+    CLA PC_ctrl({32'd0,pc},64'd4,1'b0,next_pc,pc_carry);
 
     always@(posedge clk or rst) begin
         
@@ -601,7 +601,7 @@ module ALU(
                                         end
                                         else begin
                                             is_branch = 0;
-                                            pc_branch = pc + 32'd4;
+                                            pc_branch = next_pc[31:0];
                                         end
                                     end
                                 `BNE :  begin
@@ -611,7 +611,7 @@ module ALU(
                                         end
                                         else begin
                                             is_branch = 0;
-                                            pc_branch = pc + 32'd4;
+                                            pc_branch = next_pc[31:0];
                                         end
                                     end
                                 `BLT :  begin
@@ -621,7 +621,7 @@ module ALU(
                                         end
                                         else begin
                                             is_branch = 0;
-                                            pc_branch = pc + 32'd4;
+                                            pc_branch = next_pc[31:0];
                                         end
                                     end
                                 `BGE :  begin
@@ -631,7 +631,7 @@ module ALU(
                                         end
                                         else begin
                                             is_branch = 0;
-                                            pc_branch = pc + 32'd4;
+                                            pc_branch = next_pc[31:0];
                                         end
                                     end
                                 `BLTU :  begin
@@ -641,7 +641,7 @@ module ALU(
                                         end
                                         else begin
                                             is_branch = 0;
-                                            pc_branch = pc + 32'd4;
+                                            pc_branch = next_pc[31:0];
                                         end
                                     end
                                 `BGEU :  begin
@@ -651,11 +651,12 @@ module ALU(
                                         end
                                         else begin
                                             is_branch = 0;
-                                            pc_branch = pc + 32'd4;
+                                            pc_branch = next_pc[31:0];
                                         end
                                     end
                                 default :  begin
                                         is_branch = 0;
+                                        pc_branch = next_pc[31:0];
                                     end
                                     
                             endcase
@@ -981,12 +982,3 @@ assign remainder = (divisor == 0) ? dividend :
 
 endmodule
 
-
-// 把 pc 加上 imm 傳到 pc_branch (用你們實作的加法器)
-
-
-// 1. 用 case 將 opcode 分類，然後個別寫出相對應的運算，並將結果存入 result
-// 2. 如果 branch 類型指令要跳，則 is_branch 改為 1，反之則 0
-// 3. 如果是 Store 類型指令的話，將 mem_rw 改為 1，反之其他指令都將 mem_rw 設為 0
-// 4. 如果是 Load 類型指令的話，將 is_load 改為 1，反之其他指令都將 is_load 設為 0
-// 若有其他有問題或想補充的部分，請跟Foby、承希討論！
