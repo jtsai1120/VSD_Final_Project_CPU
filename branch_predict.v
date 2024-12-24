@@ -1,43 +1,43 @@
 /*
-GHRÊòØÊúÄËøë8Ê¨°ÁöÑÂà§Êñ∑
-addressÊòØPCÁöÑÊúÄ‰ΩéÂÖ´‰ΩçÂÖÉÔºå
-ÂÖ©ÂÄãË®äËôüXORÂæåÂæóÂà∞‰∏ÄÂÄãindex
-ÁøªBHT‰∏≠index‰ΩçÂùÄÁöÑÁµêÊûúÊòØÂ§öÂ∞ë
-ÁÑ∂ÂæåÊääÈÄôÂÄãÂØ¶ÈöõÁµêÊûú‰∏üÈÄ≤ÂéªGHRÁöÑÊúÄÂè≥ÈÇäÔºåÊúÄÂ∑¶ÈÇäÁöÑ‰∏üÊéâ
+GHR?òØ??Ëø?8Ê¨°Á?ÑÂà§?ñ∑
+address?òØPC??ÑÊ?‰ΩéÂÖ´‰ΩçÂ?ÉÔ??
+?Ö©?ãË?äË?üXORÂæåÂ?óÂà∞‰∏??ãindex
+ÁøªBHT‰∏≠index‰ΩçÂ???ÑÁ?êÊ?úÊòØÂ§öÂ??
+?Ñ∂ÂæåÊ?äÈ?ôÂ?ãÂØ¶??õÁ?êÊ?ú‰?üÈ?≤ÂéªGHR??ÑÊ??è≥??äÔ?åÊ?Â∑¶È?äÁ?Ñ‰?üÊ??
 */
 module gshare_predictor (
     input start,update,
     input rst,
-    input [7:0] branch_address,update_address,  // ÂàÜÊîØÊåá‰ª§Âú∞ÂùÄÁöÑ‰Ωé 8 ‰Ωç
-    input branch_taken,          // ÂØ¶ÈöõÂàÜÊîØÁµêÊûú
+    input [7:0] branch_address,update_address,  // ??ÜÊîØ??á‰ª§?ú∞????Ñ‰?? 8 ‰Ω?
+    input branch_taken,          // ÂØ¶È?õÂ?ÜÊîØÁµêÊ??
     input [6:0]opcode,
-    input [31:0]EX_MEM_pc;
-    output reg prediction        // È†êÊ∏¨ÁµêÊûú
+    input [31:0]EX_MEM_pc,
+    output reg prediction        // ??êÊ∏¨ÁµêÊ??
 );
-    parameter GHR_BITS = 8;      // ÂÖ®Â±ÄÊ≠∑Âè≤ÂØÑÂ≠òÂô®‰ΩçÊï∏
-    parameter BHT_SIZE = 256;    // ÂàÜÊîØÊ≠∑Âè≤Ë°®Â§ßÂ∞è
+    parameter GHR_BITS = 8;      // ?Ö®Â±?Ê≠∑Âè≤ÂØÑÂ?òÂô®‰ΩçÊï∏
+    parameter BHT_SIZE = 256;    // ??ÜÊîØÊ≠∑Âè≤Ë°®Â§ßÂ∞?
 
-    reg [GHR_BITS-1:0] GHR;      // ÂÖ®Â±ÄÂàÜÊîØÊ≠∑Âè≤ÂØÑÂ≠òÂô®
-    reg [1:0] BHT[BHT_SIZE-1:0]; // ÂàÜÊîØÊ≠∑Âè≤Ë°®Ôºà2 ‰ΩçÈ£ΩÂíåË®àÊï∏Âô®Ôºâ
+    reg [GHR_BITS-1:0] GHR;      // ?Ö®Â±???ÜÊîØÊ≠∑Âè≤ÂØÑÂ?òÂô®
+    reg [1:0] BHT[BHT_SIZE-1:0]; // ??ÜÊîØÊ≠∑Âè≤Ë°®Ô??2 ‰ΩçÈ£Ω??åË?àÊï∏?ô®Ôº?
 
-    wire [7:0] index;            // BHT Á¥¢Âºï
+    wire [7:0] index;            // BHT Á¥¢Â??
     wire [7:0] update_index;
-    // XOR Êìç‰ΩúÁîüÊàêÁ¥¢Âºï
+    // XOR ??ç‰?úÁ?üÊ?êÁ¥¢Âº?
     assign index = branch_address ^ GHR;
     assign update_index = update_address ^ GHR;
     integer i;
-    // È†êÊ∏¨ÈÇèËºØ
+    // ??êÊ∏¨??èËºØ
     always @(*) begin
         if(rst) prediction=0;
-        else if (start) prediction = ((BHT[index] >= 2'b10)||(opcode==7'b1100111)|| (opcode == 7'b1101111))?1:0; // 10 Êàñ 11 È†êÊ∏¨Ë∑≥ËΩâ
+        else if (start) prediction = ((BHT[index] >= 2'b10)||(opcode==7'b1100111)|| (opcode == 7'b1101111))?1:0; // 10 ??? 11 ??êÊ∏¨Ë∑≥Ë??
         else prediction = 0;
     end
     
-    // Êõ¥Êñ∞ÈÇèËºØ
+    // ?õ¥?ñ∞??èËºØ
     always @(EX_MEM_pc or posedge rst) begin
         if (rst) begin
             for (i = 0; i < BHT_SIZE; i = i + 1) begin
-                BHT[i] = 2'b01; // ÂàùÂßãÂåñÁÇ∫„ÄåÂº±‰∏çË∑≥ËΩâ„Äç
+                BHT[i] = 2'b01; // ??ùÂ?ãÂ?ñÁÇ∫?åÂº±‰∏çË∑≥ËΩâ„??
             end 
         end
         else if(update) begin 
@@ -58,7 +58,7 @@ module gshare_predictor (
 
     end
     always@( EX_MEM_pc or posedge rst)begin
-        // Êõ¥Êñ∞ GHR
+        // ?õ¥?ñ∞ GHR
         if(rst) GHR = 0;
         else if(update)   GHR = {GHR[GHR_BITS-2:0], branch_taken};
         else GHR = GHR;

@@ -52,14 +52,14 @@ gshare_predictor predict(
     .branch_address(pc[7:0]),
     .opcode(inst[6:0]),
     .branch_taken(is_branch),
-    .EX_MEM_pc(EX_MEM_pc);
+    .EX_MEM_pc(EX_MEM_pc),
     .prediction(prediction)
 );
 
 /*initial begin
     $monitor("into_predic:%b pc:%d",into_predic,pc);
 end*/
-always@(pc or inst posedge rst)begin
+always@(pc or inst or posedge rst)begin
     if(rst)
         new_pc=0;
     else begin

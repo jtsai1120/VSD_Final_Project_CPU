@@ -81,10 +81,12 @@ module Controller_tb;
         #10;
 
         // Example 3: Jump and link instruction
-        inst = 32'b11111110110111111111000011101111; // jal x1, start
+        inst = 32'b1_1111110110_1_11111111_00001_1101111; // jal x1, start
         is_branch = 1;
+        //111111111111_11111111_1_11111101100
+        // 00000000000_00000000_0_00000010100
         #10;
-
+        //pc+{{11{inst[31]}}, inst[31], inst[19:12], inst[20], inst[30:21], 1'b0};//jal
         // Example 4: No operation
         inst = 32'b00000000000000000000000000000000; // NOP
         #10;

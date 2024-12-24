@@ -152,7 +152,7 @@ always @(negedge clk or posedge rst) begin
         RF[31] <= 64'b0;
     end
     else begin  
-        // Store �?? Branch 不用 write back
+        // Store 跟 Branch 不用 write back
         if(wrd==0) RF[wrd] <=0;
         else if (opcode != 7'b0100011 && opcode != 7'b1100011) RF[wrd] <= wdata;
         else begin
