@@ -1,5 +1,5 @@
 
-module Inst_Mem (inst, pc,NOP,flush);
+module Inst_Mem (inst, pc);
 
 parameter Size = 1024;
 

@@ -18,10 +18,17 @@ input [31:0] inst;
 
 output [31:0] pc;
 output EX_MEM_mem_rw;
-output out_result;
+output [63:0]out_result;
 output halt;
 
+//ID  I/O signal
+wire [63:0]data1, data2;
+wire [4:0] rd,rs1,rs2;
+wire [2:0] func3;
+wire [6:0] func7;
 wire [63:0] imm;
+wire [31:0] pc_branch;
+wire is_branch;
 wire [63:0] wdata;
 wire [6:0]  opcode;
 //controller signal
@@ -49,6 +56,7 @@ reg [4:0]  ID_EX_rd;
 reg [2:0]  ID_EX_func3;
 reg [6:0]  ID_EX_func7;
 reg [63:0] ID_EX_imm;
+reg [4:0]  ID_EX_rs1,ID_EX_rs2;
 reg        ID_EX_prediction;
 
 // Pipelined Registers for EX/MEM
@@ -73,7 +81,7 @@ reg        MEM_WB_mem_rw;
 
 
 IF IF(pc, clk, rst, EX_MEM_pc_branch,NOP,flush,IF_ID_prediction,control_pc,halt_happen);
-ID ID(rs1_data_control,opcode,data1, data2, rd, func3, func7, imm, clk, rst,IF_ID_inst, wdata, MEM_WB_rd, MEM_WB_opcode,rs1_addr_control);
+ID ID(rs1,rs2,rs1_data_control,opcode,data1, data2, rd, func3, func7, imm, clk, rst,IF_ID_inst, wdata, MEM_WB_rd, MEM_WB_opcode,rs1_addr_control);
 EX EX(pc_branch, is_branch, result, mem_rw, is_load, clk, rst, ID_EX_opcode, for_ID_EX_data1, for_ID_EX_data2, ID_EX_func3, ID_EX_func7, ID_EX_imm, ID_EX_pc);
 
 // MEM Stage
@@ -105,7 +113,7 @@ always@(rst or ID_EX_opcode)begin
         halt_happen=halt_happen;
 end
 
-always@(predictin or rst or flush)begin
+always@(predictin or posedge rst or flush)begin
     if(rst)
         IF_ID_prediction=0;
     else if(flush)
@@ -115,11 +123,11 @@ always@(predictin or rst or flush)begin
 
 end
 
-always@(inst or rst or flush or halt_happen)begin
+always@(inst or posedge rst or flush or halt_happen)begin
     if(rst)
-        IF_ID_inst={25{0},`NOP_opcode};
+        IF_ID_inst={25'b0,`NOP_opcode};
     else if(flush || halt_happen)
-        IF_ID_inst={25{0},`NOP_opcode};
+        IF_ID_inst={25'b0,`NOP_opcode};
     else
         IF_ID_inst=inst;
 end
@@ -128,12 +136,14 @@ end
 always @(posedge clk or posedge rst) begin
     if (rst) begin
         // clear all registers for pipeline
-        //記得初始值得inst會是 addi x0 x0 0
+        //閮????澆?nst?? addi x0 x0 0
 
          // IF -> ID
         IF_ID_pc <= 0;
         
         // ID -> EX
+        ID_EX_rs1<=5'b0;
+        ID_EX_rs2<=5'b0;
         ID_EX_pc <= 0;
         ID_EX_opcode <= `NOP_opcode;
         ID_EX_imm <= `NOP_imm;
@@ -161,21 +171,25 @@ always @(posedge clk or posedge rst) begin
         MEM_WB_mem_data <= 0;
         MEM_WB_mem_rw <= 0;
     end
-    else if(flush or halt_happen)begin
+    else if(flush || halt_happen)begin
          // ID -> EX
-        ID_EX_pc <= 0;
+        ID_EX_rs1<=5'b0;
+        ID_EX_rs2<=5'b0;
+        ID_EX_pc <= 32'b0;
         ID_EX_opcode <= `NOP_opcode;
         ID_EX_imm <= `NOP_imm;
-        ID_EX_data1 <= 64{0};
-        ID_EX_data2 <= 64{0};
+        ID_EX_data1 <= 64'b0;
+        ID_EX_data2 <= 64'b0;
         ID_EX_rd <= `NOP_rd;
         ID_EX_func3 <= `NOP_func3;
         ID_EX_func7 <= `NOP_func7;
     end 
-    else if(NOP)
+    else if(NOP) begin
         // IF -> ID
         IF_ID_pc <= IF_ID_pc;
         // ID -> EX
+        ID_EX_rs1<=rs1;
+        ID_EX_rs2<=rs2;
         ID_EX_pc <= ID_EX_pc;
         ID_EX_opcode <= ID_EX_opcode;
         ID_EX_imm <= ID_EX_imm;
@@ -194,6 +208,7 @@ always @(posedge clk or posedge rst) begin
         EX_MEM_data2 <= 0;
         EX_MEM_mem_rw <= 0;
         EX_MEM_is_load <= 0;
+        end
     else begin
         // IF -> ID
         IF_ID_pc <= pc;

@@ -19,9 +19,9 @@ wire [63:0] mem_data;
 wire [63:0] addr;
 wire mem_rw;
 wire halt;
-top top(halt,mem_data, mem_rw, addr, pc, clk, rst, inst);
-Inst_Mem Inst_Mem(inst, pc,NOP,flush);
-Data_Mem Data_Mem(mem_data, clk, rst, mem_rw, addr);
+top top_module(halt,mem_data, mem_rw, addr, pc, clk, rst, inst);
+Inst_Mem Inst_Memory(inst, pc);
+Data_Mem Data_Memory(mem_data, clk, rst, mem_rw, addr);
 
 initial begin
     $readmemb("./Data.prog", Data_Mem.DM);

@@ -41,7 +41,7 @@
 `define NOP_func7 'b0000000
 `define NOP_func3 'b000
 `define NOP_imm 'b000000000000
-module ID (rs1_data_control,opcode, data1, data2, rd, func3, func7, imm_ext, clk, rst, inst, wdata, wrd, wopcode,rs1_addr_control,flush);
+module ID (rs1,rs2,rs1_data_control,opcode, data1, data2, rd, func3, func7, imm_ext, clk, rst, inst, wdata, wrd, wopcode,rs1_addr_control,flush);
 parameter R_type = 110011;
 input clk, rst,flush;
 input [31:0] inst;
@@ -56,8 +56,9 @@ output reg [4:0] rd;
 output reg [2:0] func3;
 output reg [6:0] func7;
 output reg [63:0]imm_ext;
+output reg [4:0]rs1,rs2;
 output     [63:0]rs1_data_control;
-integer i;
+
 reg [63:0] RF [0:31];
 assign rs1_data_control=(wrd==rs1_addr_control)?wdata:RF[rs1_addr_control];
 always @(posedge clk or posedge rst or flush) begin
@@ -68,6 +69,8 @@ always @(posedge clk or posedge rst or flush) begin
         rd <= `NOP_rd;
         func3 <= `NOP_func3;
         func7 <= `NOP_func7 ;
+        rs1 <=0;
+        rs2 <=0;
     end 
     else begin
         opcode <= `OP;
@@ -76,6 +79,8 @@ always @(posedge clk or posedge rst or flush) begin
         rd <= `R_rd;
         func3 <= `R_func3;
         func7 <= `R_func7;
+        rs1<=`R_rs1;
+        rs2<=`R_rs2;
     end
 end
 
@@ -152,13 +157,11 @@ always @(negedge clk or posedge rst) begin
         RF[31] <= 64'b0;
     end
     else begin  
-        // Store 跟 Branch 不用 write back
+        
+        // Store and Branch  don't write back
         if(wrd==0) RF[wrd] <=0;
         else if (opcode != 7'b0100011 && opcode != 7'b1100011) RF[wrd] <= wdata;
-        else begin
-            for(i=0;i<32;i=i+1)
-                RF[i]<=RF[i];
-        end;
+        else RF[wrd] <= RF[wrd];
     end
 end
 

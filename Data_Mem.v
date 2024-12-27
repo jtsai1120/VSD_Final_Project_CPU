@@ -46,6 +46,7 @@ always @(negedge clk or rst) begin
     end else 
         for (i = 0; i < Size; i = i + 1) begin
             DM[i] <= DM[i];
+            end
 end
 
 
