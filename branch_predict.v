@@ -38,11 +38,11 @@ module gshare_predictor (
         end
         else if(update) begin 
             if (branch_taken) begin
-                if (BHT[update_index] < 2'b11) BHT[update_index] = BHT[update_index] + 1;
+                if (BHT[update_index] < 2'b11) BHT[update_index] <= BHT[update_index] + 1;
                 else BHT[update_index] <= BHT[update_index];
             end 
             else begin
-                if (BHT[update_index] > 2'b00) BHT[update_index] = BHT[update_index] - 1;
+                if (BHT[update_index] > 2'b00) BHT[update_index] <= BHT[update_index] - 1;
                 else BHT[update_index] <= BHT[update_index];
             end
         end
