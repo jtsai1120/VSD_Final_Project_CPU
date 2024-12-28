@@ -41,7 +41,7 @@ ForwardingUnit FU(
 //branch prediction
 
 assign into_predic=((inst[6:0]==7'b1100011)||(inst[6:0]==7'b1100111)||(inst[6:0]== 7'b1101111))?1:0;
-assign update=((EX_MEM_opcode==7'b1100011)||(EX_MEM_opcode==7'b1100111)||(EX_MEM_opcode== 7'b1101111))?1:0;
+assign update=((EX_MEM_opcode==7'b1100011)||(EX_MEM_opcode==7'b1100111)||(EX_MEM_opcode== 7'b1101111))&&clk?1:0;
 assign rs1_addr=inst[19:15];
 
 gshare_predictor predict(
@@ -52,7 +52,6 @@ gshare_predictor predict(
     .branch_address(pc[7:0]),
     .opcode(inst[6:0]),
     .branch_taken(is_branch),
-    .EX_MEM_pc(EX_MEM_pc),
     .prediction(prediction)
 );
 

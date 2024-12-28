@@ -8,7 +8,6 @@ module gshare_predictor (
     input [7:0] branch_address,update_address, 
     input branch_taken,         
     input [6:0]opcode,
-    input [31:0]EX_MEM_pc,
     output reg prediction        
 );
     parameter GHR_BITS = 8;     
@@ -22,7 +21,6 @@ module gshare_predictor (
    
     assign index = branch_address ^ GHR;
     assign update_index = update_address ^ GHR;
-    reg pc_trigger_1,pc_trigger_2;
     integer i;
 
     always @(*) begin
@@ -32,34 +30,32 @@ module gshare_predictor (
     end
     
     // update logic
-    always @(EX_MEM_pc or posedge rst) begin
+    always @(posedge update or posedge rst) begin
         if (rst) begin
             for (i = 0; i < BHT_SIZE; i = i + 1) begin
-                BHT[i] = 2'b01; // //preset weak not jump
+                BHT[i] <= 2'b01; // //preset weak not jump
             end 
         end
         else if(update) begin 
             if (branch_taken) begin
                 if (BHT[update_index] < 2'b11) BHT[update_index] = BHT[update_index] + 1;
-                else BHT[update_index] = BHT[update_index];
+                else BHT[update_index] <= BHT[update_index];
             end 
             else begin
                 if (BHT[update_index] > 2'b00) BHT[update_index] = BHT[update_index] - 1;
-                else BHT[update_index] = BHT[update_index];
+                else BHT[update_index] <= BHT[update_index];
             end
         end
         else begin
             for (i = 0; i < BHT_SIZE; i = i + 1) begin
-                BHT[i] = BHT[i]; // keep value
+                BHT[i] <= BHT[i]; // keep value
             end 
         end
-        pc_trigger_1=EX_MEM_pc[0];
     end
-    always@( EX_MEM_pc or posedge rst)begin
+    always@( posedge update or posedge rst)begin
         // update GHR
-        if(rst) GHR = 0;
-        else if(update)   GHR = {GHR[GHR_BITS-2:0], branch_taken};
-        else GHR = GHR;
-        pc_trigger_2=EX_MEM_pc[0];
+        if(rst) GHR <= 0;
+        else if(update)   GHR <= {GHR[GHR_BITS-2:0], branch_taken};
+        else GHR <= GHR;
     end
 endmodule
