@@ -1,43 +1,41 @@
 /*
-GHR?òØ??Ëø?8Ê¨°Á?ÑÂà§?ñ∑
-address?òØPC??ÑÊ?‰ΩéÂÖ´‰ΩçÂ?ÉÔ??
-?Ö©?ãË?äË?üXORÂæåÂ?óÂà∞‰∏??ãindex
-ÁøªBHT‰∏≠index‰ΩçÂ???ÑÁ?êÊ?úÊòØÂ§öÂ??
-?Ñ∂ÂæåÊ?äÈ?ôÂ?ãÂØ¶??õÁ?êÊ?ú‰?üÈ?≤ÂéªGHR??ÑÊ??è≥??äÔ?åÊ?Â∑¶È?äÁ?Ñ‰?üÊ??
+ÁøªBHT‰∏≠index‰ΩçÂùÄÁöÑÁµêÊûúÊòØÂ§öÂ∞ë
+ÁÑ∂ÂæåÊääÈÄôÂÄãÂØ¶ÈöõÁµêÊûú‰∏üÈÄ≤ÂéªGHRÁöÑÊúÄÂè≥ÈÇäÔºåÊúÄÂ∑¶ÈÇäÁöÑ‰∏üÊéâ
 */
 module gshare_predictor (
     input start,update,
     input rst,
-    input [7:0] branch_address,update_address,  // ??ÜÊîØ??á‰ª§?ú∞????Ñ‰?? 8 ‰Ω?
-    input branch_taken,          // ÂØ¶È?õÂ?ÜÊîØÁµêÊ??
+    input [7:0] branch_address,update_address, 
+    input branch_taken,         
     input [6:0]opcode,
     input [31:0]EX_MEM_pc,
-    output reg prediction        // ??êÊ∏¨ÁµêÊ??
+    output reg prediction        
 );
-    parameter GHR_BITS = 8;      // ?Ö®Â±?Ê≠∑Âè≤ÂØÑÂ?òÂô®‰ΩçÊï∏
-    parameter BHT_SIZE = 256;    // ??ÜÊîØÊ≠∑Âè≤Ë°®Â§ßÂ∞?
+    parameter GHR_BITS = 8;     
+    parameter BHT_SIZE = 256;   
 
-    reg [GHR_BITS-1:0] GHR;      // ?Ö®Â±???ÜÊîØÊ≠∑Âè≤ÂØÑÂ?òÂô®
-    reg [1:0] BHT[BHT_SIZE-1:0]; // ??ÜÊîØÊ≠∑Âè≤Ë°®Ô??2 ‰ΩçÈ£Ω??åË?àÊï∏?ô®Ôº?
+    reg [GHR_BITS-1:0] GHR;      
+    reg [1:0] BHT[BHT_SIZE-1:0]; 
 
-    wire [7:0] index;            // BHT Á¥¢Â??
+    wire [7:0] index;           
     wire [7:0] update_index;
-    // XOR ??ç‰?úÁ?üÊ?êÁ¥¢Âº?
+   
     assign index = branch_address ^ GHR;
     assign update_index = update_address ^ GHR;
+    reg pc_trigger_1,pc_trigger_2;
     integer i;
-    // ??êÊ∏¨??èËºØ
+
     always @(*) begin
         if(rst) prediction=0;
-        else if (start) prediction = ((BHT[index] >= 2'b10)||(opcode==7'b1100111)|| (opcode == 7'b1101111))?1:0; // 10 ??? 11 ??êÊ∏¨Ë∑≥Ë??
+        else if (start) prediction = ((BHT[index] >= 2'b10)||(opcode==7'b1100111)|| (opcode == 7'b1101111))?1:0; // 10 ??? 11 ??ÔøΩÊ∏¨Ë∑≥ÔøΩ??
         else prediction = 0;
     end
     
-    // ?õ¥?ñ∞??èËºØ
+    // update logic
     always @(EX_MEM_pc or posedge rst) begin
         if (rst) begin
             for (i = 0; i < BHT_SIZE; i = i + 1) begin
-                BHT[i] = 2'b01; // ??ùÂ?ãÂ?ñÁÇ∫?åÂº±‰∏çË∑≥ËΩâ„??
+                BHT[i] = 2'b01; // //preset weak not jump
             end 
         end
         else if(update) begin 
@@ -55,12 +53,13 @@ module gshare_predictor (
                 BHT[i] = BHT[i]; // keep value
             end 
         end
-
+        pc_trigger_1=EX_MEM_pc[0];
     end
     always@( EX_MEM_pc or posedge rst)begin
-        // ?õ¥?ñ∞ GHR
+        // update GHR
         if(rst) GHR = 0;
         else if(update)   GHR = {GHR[GHR_BITS-2:0], branch_taken};
         else GHR = GHR;
+        pc_trigger_2=EX_MEM_pc[0];
     end
 endmodule
