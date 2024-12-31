@@ -89,7 +89,7 @@ EX EX(
     .rst(rst),
     .opcode(ID_EX_opcode),
     .func3(ID_EX_func3),
-    .fun7(ID_EX_func7),
+    .func7(ID_EX_func7),
     .imm(ID_EX_imm),
     .data1(for_ID_EX_data1),
     .data2(for_ID_EX_data2),
@@ -112,7 +112,7 @@ Controller Controller(ForwardA,ForwardB,control_pc,rs1_addr_control,predictin,NO
 assign for_ID_EX_data1=(ForwardA==2'b10)?EX_MEM_result:
                        (ForwardA==2'b01)?wdata:
                        ID_EX_data1;
-assign for_ID_EX_data2=(ForwardB==2'10)?EX_MEM_result:
+assign for_ID_EX_data2=(ForwardB==2'b10)?EX_MEM_result:
                        (ForwardB==2'b01)?wdata:
                        ID_EX_data2;
 
@@ -248,7 +248,7 @@ always @(posedge clk or posedge rst) begin
     else begin
         // IF -> ID
         IF_ID_pc <= pc;
-        IF_IF_prediction<=predictin;
+        IF_ID_prediction<=predictin;
         // ID -> EX
         ID_EX_rs1<=rs1;
         ID_EX_rs2<=rs2;

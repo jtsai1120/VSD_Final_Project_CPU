@@ -82,7 +82,7 @@ end
 always @(posedge clk or negedge clk or posedge rst or posedge flush)begin
     if(rst || flush)begin
         data1<=RF[`NOP_rs1];
-        data<=RF[`NOP_rs2];
+        data2<=RF[`NOP_rs2];
     end
     else begin
         if(~clk)begin
@@ -100,11 +100,11 @@ always @(posedge clk or negedge clk or posedge rst or posedge flush)begin
             if(rs2!=0)
             data2<=wdata;
             else
-            data<=0;
+            data2<=0;
         end
         default:begin
             data1<=data1;
-            data2<=data2
+            data2<=data2;
         end
         endcase
         end

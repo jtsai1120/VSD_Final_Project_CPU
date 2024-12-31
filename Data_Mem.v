@@ -26,6 +26,15 @@ reg [7:0] DM [0:Size-1];
 
 assign mem_data = (mem_rw)? 64'bz : {DM[addr+7],DM[addr+6],DM[addr+5],DM[addr+4],DM[addr+3],DM[addr+2],DM[addr+1],DM[addr]};
 
+integer j;
+
+reg [63:0] comb_DM [0:Size-1];
+
+always @(*) begin
+    for (j = 0; j < Size; j = j + 1)
+        comb_DM[j] = {DM[j*8+7],DM[j*8+6],DM[j*8+5],DM[j*8+4],DM[j*8+3],DM[j*8+2],DM[j*8+1],DM[j*8]};
+end
+
 integer i;
 
 always @(negedge clk or rst) begin
@@ -35,18 +44,19 @@ always @(negedge clk or rst) begin
         end
     end
     else if (mem_rw) begin
-        DM[addr]=mem_data[7:0];
-        DM[addr+1] = mem_data[15:8];
-        DM[addr+2] = mem_data[23:16];
-        DM[addr+3] = mem_data[31:24];
-        DM[addr+4] = mem_data[39:32];
-        DM[addr+5] = mem_data[47:40];
-        DM[addr+6] = mem_data[55:48];
-        DM[addr+7] = mem_data[63:56];
-    end else 
+        DM[addr+7] <= mem_data[7:0];
+        DM[addr+6] <= mem_data[15:8];
+        DM[addr+5] <= mem_data[23:16];
+        DM[addr+4] <= mem_data[31:24];
+        DM[addr+3] <= mem_data[39:32];
+        DM[addr+2] <= mem_data[47:40];
+        DM[addr+1] <= mem_data[55:48];
+        DM[addr]   <= mem_data[63:56];
+    end else begin
         for (i = 0; i < Size; i = i + 1) begin
             DM[i] <= DM[i];
-            end
+        end
+    end
 end
 
 
