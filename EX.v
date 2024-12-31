@@ -1,4 +1,4 @@
-module ALU(
+module EX(
         input clk, rst,
         input [6:0] opcode,
         input [2:0] func3,
@@ -14,7 +14,7 @@ module ALU(
         output reg is_load   // 1: load, 0: others
     );
     /*opcode type*/
-    `define OP 7'b0110011
+    `define op_64 7'b0110011
     `define OP_32 7'b0111011
     `define OP_imm 7'b0010011
     `define OP_imm_32 7'b0011011
@@ -132,7 +132,7 @@ module ALU(
 
     assign cla_data1 = data1;
     assign cla_data2 = 
-    (opcode == `OP ) ? data2 : 
+    (opcode == `op_64 ) ? data2 : 
     ((opcode == `OP_32) ? {{32{data2[31]}} , data2[31:0]} : 
     ((opcode == `OP_imm) ? imm :
     ((opcode == `OP_imm) ? {{32{imm[31]}} , imm[31:0]}  : data1 ) ) ) ;
@@ -171,7 +171,7 @@ module ALU(
 	else begin
 	    
         case(opcode)
-            `OP :  begin
+            `op_64 :  begin
                             is_load <= 0;
                             mem_rw <= 0;
                             case(func3)
