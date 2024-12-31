@@ -197,8 +197,15 @@ string Mnemonic2MachineCode(vector<string> substrings) {
         opcode = "1100111";
         funct3 = "000";
         rd = reg2bin(substrings[1]);
-        rs1 = reg2bin(substrings[2]);
-        imm_11_0 = dec2bin(4*(actual_line_number + stoi(substrings[3])), 12);
+
+        auto open_bracket = substrings[2].find('('); // 找到 '(' 的位置
+        auto close_bracket = substrings[2].find(')'); // 找到 ')' 的位置
+        auto offset_str = substrings[2].substr(0, open_bracket); // 提取 "offset"
+        auto reg_str = substrings[2].substr(open_bracket + 1, close_bracket - open_bracket - 1); // 提取 "reg"
+        
+        rs1 = reg2bin(reg_str);
+        imm_11_0 = dec2bin(stoi(offset_str), 12);
+        
         machine_code_line = imm_11_0 + rs1 + funct3 + rd + opcode;
     } else if (operation == "jal") {
         // J-type
