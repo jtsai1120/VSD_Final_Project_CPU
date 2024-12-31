@@ -16,7 +16,7 @@ DM[addr+7] = mem_data[63:56];
 */
 module Data_Mem(mem_data, clk, rst, mem_rw, addr);
 
-parameter Size = 9192;
+parameter Size = 8192;
 input clk, rst;
 input mem_rw;
 input [63:0] addr;

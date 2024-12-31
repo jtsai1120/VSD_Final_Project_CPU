@@ -58,17 +58,14 @@ gshare_predictor predict(
 /*initial begin
     $monitor("into_predic:%b pc:%d",into_predic,pc);
 end*/
-always@(pc or inst or posedge rst)begin
-    if(rst)
-        new_pc=0;
-    else begin
+always@(pc or inst or rs1_data)begin
         case(inst[6:0])
             7'b1100011:new_pc=pc+{{19{inst[31]}}, inst[31], inst[7], inst[30:25], inst[11:8],1'b0}; //branch
             7'b1101111:new_pc=pc+{{11{inst[31]}}, inst[31], inst[19:12], inst[20], inst[30:21], 1'b0};//jal
             7'b1100111:new_pc=rs1_data[31:0]+{{20{inst[31]}}, inst[31:20]};//jalr
             default:new_pc=pc;
         endcase
-    end
+    
 end
 
 

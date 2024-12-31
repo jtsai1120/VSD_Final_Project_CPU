@@ -34,13 +34,13 @@
 `define J_imm_19_12 inst[19:12]
 `define J_rd inst[11:7]
 
-`define NOP_opcode 'b0010011
-`define NOP_rs1 'b00000
-`define NOP_rs2 'b00000
-`define NOP_rd 'b00000
-`define NOP_func7 'b0000000
-`define NOP_func3 'b000
-`define NOP_imm 'b000000000000
+`define NOP_opcode 7'b0010011
+`define NOP_rs1 5'b00000
+`define NOP_rs2 5'b00000
+`define NOP_rd 5'b00000
+`define NOP_func7 7'b0000000
+`define NOP_func3 3'b000
+`define NOP_imm 12'b000000000000
 module ID (rs1,rs2,rs1_data_control,opcode, data1, data2, rd, func3, func7, imm_ext, clk, rst, inst, wdata, wrd, wopcode,rs1_addr_control,flush);
 parameter R_type = 110011;
 input clk, rst,flush;
@@ -61,11 +61,9 @@ output     [63:0]rs1_data_control;
 
 reg [63:0] RF [0:31];
 assign rs1_data_control=(wrd==rs1_addr_control)?wdata:RF[rs1_addr_control];
-always @(posedge clk or posedge rst or flush) begin
+always @(posedge clk or posedge rst or posedge flush) begin
     if (rst || flush) begin
         opcode <= `NOP_opcode;
-        data1 <= RF[`NOP_rs1];
-        data2 <= RF[`NOP_rs2];
         rd <= `NOP_rd;
         func3 <= `NOP_func3;
         func7 <= `NOP_func7 ;
@@ -74,8 +72,6 @@ always @(posedge clk or posedge rst or flush) begin
     end 
     else begin
         opcode <= `OP;
-        data1 <= RF[`R_rs1];
-        data2 <= RF[`R_rs2];
         rd <= `R_rd;
         func3 <= `R_func3;
         func7 <= `R_func7;
@@ -83,8 +79,42 @@ always @(posedge clk or posedge rst or flush) begin
         rs2<=`R_rs2;
     end
 end
+always @(posedge clk or negedge clk or posedge rst or posedge flush)begin
+    if(rst || flush)begin
+        data1<=RF[`NOP_rs1];
+        data<=RF[`NOP_rs2];
+    end
+    else begin
+        if(~clk)begin
+        case(wrd)
+        rs1:begin
+            if(rs1!=0)
+            data1<=wdata;
+            else
+            data1<=0;
 
-always @(posedge clk or posedge rst or flush) begin
+            data2<=data2;
+        end
+        rs2:begin
+            data1<=data1;
+            if(rs2!=0)
+            data2<=wdata;
+            else
+            data<=0;
+        end
+        default:begin
+            data1<=data1;
+            data2<=data2
+        end
+        endcase
+        end
+        else begin
+            data1<=RF[`R_rs1];
+            data2<=RF[`R_rs2];
+        end
+    end
+end
+always @(posedge clk or posedge rst or posedge flush) begin
     if (rst || flush) begin
         imm_ext <= 0;
     end
@@ -160,7 +190,7 @@ always @(negedge clk or posedge rst) begin
         
         // Store and Branch  don't write back
         if(wrd==0) RF[wrd] <=0;
-        else if (opcode != 7'b0100011 && opcode != 7'b1100011) RF[wrd] <= wdata;
+        else if (wopcode != 7'b0100011 && wopcode != 7'b1100011) RF[wrd] <= wdata;
         else RF[wrd] <= RF[wrd];
     end
 end
