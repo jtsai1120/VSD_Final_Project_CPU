@@ -69,6 +69,22 @@ string Mnemonic2MachineCode(vector<string> substrings) {
         rs2 = reg2bin(substrings[3]);
         machine_code_line = funct7 + rs2 + rs1 + funct3 + rd + opcode;
         opcode = "0110011";
+    } else if (operation == "addw" || operation == "subw" || operation == "andw" || operation == "orw" || operation == "xorw" || operation == "sllw" || operation == "srlw" || operation == "sraw" || operation == "sltw" || operation == "sltuw") {
+        // R-type
+        opcode = (operation == "sltw" || operation == "sltuw") ? "0110011" : "0000011";
+        funct3 = (operation == "addw" || operation == "subw") ? "000" :
+                (operation == "sllw") ? "001" :
+                (operation == "sltw" || operation == "srlw") ? "010" :
+                (operation == "sraw") ? "011" :
+                (operation == "xorw") ? "100" :
+                (operation == "orw") ? "110" :
+                (operation == "andw") ? "111" : "000";
+        funct7 = (operation == "subw" || operation == "sraw")? "0100000" : "0000000";
+        rd = reg2bin(substrings[1]);
+        rs1 = reg2bin(substrings[2]);
+        rs2 = reg2bin(substrings[3]);
+        machine_code_line = funct7 + rs2 + rs1 + funct3 + rd + opcode;
+        opcode = "0111011";
     } else if (operation == "slli" || operation == "srli" || operation == "srai" || operation == "addi" || operation == "xori" || operation == "ori" || operation == "andi" || operation == "slti" || operation == "sltiu") {
         // I-type
         opcode = "0010011";
