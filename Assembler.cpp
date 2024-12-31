@@ -53,38 +53,42 @@ string Mnemonic2MachineCode(vector<string> substrings) {
     string imm_11_0, imm_11_5, imm_4_0, imm_12, imm_10_5, imm_4_1, imm_11, imm_31_12, imm_20, imm_10_1, imm_19_12;
     auto operation = substrings[0];
 
-    if (operation == "add" || operation == "sub" || operation == "and" || operation == "or" || operation == "xor" || operation == "sll" || operation == "srl" || operation == "sra" || operation == "slt" || operation == "sltu") {
+    if (operation == "add" || operation == "sub" || operation == "mul" || operation == "and" || operation == "remu" || operation == "or" || operation == "rem" || operation == "xor" || operation == "div" || operation == "sll" || operation == "mulh" || operation == "srl" || operation == "sra" || operation == "divu" || operation == "slt" || operation == "mulhsu" || operation == "sltu" || operation == "mulhu") {
         // R-type
-        opcode = (operation == "slt" || operation == "sltu") ? "0110011" : "0000011";
-        funct3 = (operation == "add" || operation == "sub") ? "000" :
-                (operation == "sll") ? "001" :
-                (operation == "slt" || operation == "srl") ? "010" :
-                (operation == "sra") ? "011" :
-                (operation == "xor") ? "100" :
-                (operation == "or") ? "110" :
-                (operation == "and") ? "111" : "000";
-        funct7 = (operation == "sub" || operation == "sra")? "0100000" : "0000000";
-        rd = reg2bin(substrings[1]);
-        rs1 = reg2bin(substrings[2]);
-        rs2 = reg2bin(substrings[3]);
-        machine_code_line = funct7 + rs2 + rs1 + funct3 + rd + opcode;
         opcode = "0110011";
-    } else if (operation == "addw" || operation == "subw" || operation == "andw" || operation == "orw" || operation == "xorw" || operation == "sllw" || operation == "srlw" || operation == "sraw" || operation == "sltw" || operation == "sltuw") {
-        // R-type
-        opcode = (operation == "sltw" || operation == "sltuw") ? "0110011" : "0000011";
-        funct3 = (operation == "addw" || operation == "subw") ? "000" :
-                (operation == "sllw") ? "001" :
-                (operation == "sltw" || operation == "srlw") ? "010" :
-                (operation == "sraw") ? "011" :
-                (operation == "xorw") ? "100" :
-                (operation == "orw") ? "110" :
-                (operation == "andw") ? "111" : "000";
-        funct7 = (operation == "subw" || operation == "sraw")? "0100000" : "0000000";
+        // opcode = (operation == "slt" || operation == "sltu") ? "0110011" : "0000011";
+        funct3 = (operation == "add" || operation == "sub" || operation == "mul") ? "000" :
+                (operation == "sll" || operation == "mulh") ? "001" :
+                (operation == "slt" || operation == "mulhsu") ? "010" :
+                (operation == "sltu" || operation == "mulhu") ? "011" :
+                (operation == "sra" || operation == "srl" || operation == "divu") ? "101" :
+                (operation == "xor" || operation == "div") ? "100" :
+                (operation == "or" || operation == "rem") ? "110" :
+                (operation == "and" || operation == "remu") ? "111" : "000";
+        funct7 = (operation == "sub" || operation == "sra")? "0100000" : 
+                (operation == "mul" || operation == "mulh" || operation == "mulhsu" || operation == "mulhu" || operation == "div" || operation == "divu" || operation == "rem" || operation == "remu") ? "0000001" : "0000000";
         rd = reg2bin(substrings[1]);
         rs1 = reg2bin(substrings[2]);
         rs2 = reg2bin(substrings[3]);
         machine_code_line = funct7 + rs2 + rs1 + funct3 + rd + opcode;
+    } else if (operation == "addw" || operation == "subw" || operation == "mulw" || operation == "andw" || operation == "remuw" || operation == "orw" || operation == "remw" || operation == "xorw" || operation == "divw" || operation == "sllw" || operation == "srlw" || operation == "sraw" || operation == "divuw" || operation == "sltw" || operation == "sltuw") {
+        // R-type
         opcode = "0111011";
+        // opcode = (operation == "slt" || operation == "sltu") ? "0110011" : "0000011";
+        funct3 = (operation == "addw" || operation == "subw" || operation == "mulw") ? "000" :
+                (operation == "sllw") ? "001" :
+                (operation == "sltw") ? "010" :
+                (operation == "sltuw") ? "011" :
+                (operation == "sraw" || operation == "srlw" || operation == "divuw") ? "101" :
+                (operation == "xorw" || operation == "divw") ? "100" :
+                (operation == "orw" || operation == "remw") ? "110" :
+                (operation == "andw" || operation == "remuw") ? "111" : "000";
+        funct7 = (operation == "subw" || operation == "sraw")? "0100000" : 
+                (operation == "mulw" || operation == "divw" || operation == "divuw" || operation == "remw" || operation == "remuw") ? "0000001" : "0000000";
+        rd = reg2bin(substrings[1]);
+        rs1 = reg2bin(substrings[2]);
+        rs2 = reg2bin(substrings[3]);
+        machine_code_line = funct7 + rs2 + rs1 + funct3 + rd + opcode;
     } else if (operation == "slli" || operation == "srli" || operation == "srai" || operation == "addi" || operation == "xori" || operation == "ori" || operation == "andi" || operation == "slti" || operation == "sltiu") {
         // I-type
         opcode = "0010011";
@@ -100,6 +104,21 @@ string Mnemonic2MachineCode(vector<string> substrings) {
         rs1 = reg2bin(substrings[2]);
         imm_11_0 = dec2bin(stoi(substrings[3]), 12);
         machine_code_line = imm_11_0 + rs1 + funct3 + rd + opcode;
+    } else if (operation == "slliw" || operation == "srliw" || operation == "sraiw" || operation == "addiw" || operation == "xoriw" || operation == "oriw" || operation == "andiw" || operation == "sltiw" || operation == "sltiuw") {
+        // I-type
+        opcode = "0010011";
+        funct3 = (operation == "addiw") ? "000" :
+                (operation == "xoriw") ? "100" :
+                (operation == "oriw") ? "110" :
+                (operation == "andiw") ? "111" :
+                (operation == "sltiw") ? "010" :
+                (operation == "sltiuw") ? "011" :
+                (operation == "slliw") ? "001" :
+                (operation == "srliw" || operation == "sraiw") ? "101" : "000";
+        rd = reg2bin(substrings[1]);
+        rs1 = reg2bin(substrings[2]);
+        imm_11_0 = dec2bin(stoi(substrings[3]), 12);
+        machine_code_line = imm_11_0 + rs1 + funct3 + rd + opcode;
     } else if (operation == "lb" || operation == "lh" || operation == "lw" || operation == "ld" || operation == "lbu" || operation == "lhu") {
         // I-type
         opcode = "0000011";
@@ -108,7 +127,8 @@ string Mnemonic2MachineCode(vector<string> substrings) {
                 (operation == "lw") ? "010" :
                 (operation == "ld") ? "011" :
                 (operation == "lbu") ? "100" :
-                (operation == "lhu") ? "101" : "000";
+                (operation == "lhu") ? "101" : 
+                (operation == "lwu") ? "110" : "000";
         rd = reg2bin(substrings[1]);
         auto open_bracket = substrings[2].find('('); // 找到 '(' 的位置
         auto close_bracket = substrings[2].find(')'); // 找到 ')' 的位置
@@ -160,17 +180,19 @@ string Mnemonic2MachineCode(vector<string> substrings) {
         }
         cout << "Error: Unknown label : " << substrings[3] << endl;
         assert(0);
-    } else if (operation == "mul" || operation == "div") {
-        // R-type
-        opcode = "0110011";
-        funct3 = (operation == "mul") ? "000" :
-                (operation == "div") ? "100" : "000";
-        funct7 = "0000001";
-        rd = reg2bin(substrings[1]);  
-        rs1 = reg2bin(substrings[2]);
-        rs2 = reg2bin(substrings[3]);
-        machine_code_line = funct7 + rs2 + rs1 + funct3 + rd + opcode;      
-    } else if (operation == "jalr") {
+    } 
+    // else if (operation == "mul" || operation == "div") {
+    //     // R-type
+    //     opcode = "0110011";
+    //     funct3 = (operation == "mul") ? "000" :
+    //             (operation == "div") ? "100" : "000";
+    //     funct7 = "0000001";
+    //     rd = reg2bin(substrings[1]);  
+    //     rs1 = reg2bin(substrings[2]);
+    //     rs2 = reg2bin(substrings[3]);
+    //     machine_code_line = funct7 + rs2 + rs1 + funct3 + rd + opcode;      
+    // } 
+    else if (operation == "jalr") {
         // I-type
         opcode = "1100111";
         funct3 = "000";
