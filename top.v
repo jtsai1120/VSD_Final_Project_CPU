@@ -82,7 +82,7 @@ reg [63:0] MEM_WB_mem_data;
 reg        MEM_WB_mem_rw;
 
 
-IF IF(pc, clk, rst, pc_branch,NOP,flush,IF_ID_prediction,control_pc,halt_happen);
+IF IF(pc, clk, rst, pc_branch,NOP,flush,predictin,control_pc,halt_happen);
 ID ID(rs1,rs2,rs1_data_control,opcode,data1, data2, rd, func3, func7, imm, clk, rst,IF_ID_inst, wdata, MEM_WB_rd, MEM_WB_opcode,rs1_addr_control,flush);
 EX EX(
     .clk(clk),
