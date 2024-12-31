@@ -119,7 +119,7 @@ string Mnemonic2MachineCode(vector<string> substrings) {
         rs1 = reg2bin(substrings[2]);
         imm_11_0 = dec2bin(stoi(substrings[3]), 12);
         machine_code_line = imm_11_0 + rs1 + funct3 + rd + opcode;
-    } else if (operation == "lb" || operation == "lh" || operation == "lw" || operation == "ld" || operation == "lbu" || operation == "lhu") {
+    } else if (operation == "lb" || operation == "lh" || operation == "lw" || operation == "ld" || operation == "lbu" || operation == "lhu" || operation == "lwu") {
         // I-type
         opcode = "0000011";
         funct3 = (operation == "lb") ? "000" :
