@@ -75,7 +75,6 @@ module ALU(
     `define REMUW_func7 7'b0000001
 
 
-
     /*func3 BRANCH*/
     `define BEQ 3'b000
     `define BNE 3'b001
@@ -126,6 +125,10 @@ module ALU(
 
 //CLA 
 //64bits AS
+    
+    wire [63:0] cla_add_result , cla_sub_result;
+    wire cla_add_carry_out , cla_sub_carry_out;
+    wire [63:0] cla_data1 , cla_data2 , Tcmp_cla_data2 , Ocmp_cla_data2;
 
     assign cla_data1 = data1;
     assign cla_data2 = 
@@ -133,18 +136,15 @@ module ALU(
     ((opcode == `OP_32) ? {{32{data2[31]}} , data2[31:0]} : 
     ((opcode == `OP_imm) ? imm :
     ((opcode == `OP_imm) ? {{32{imm[31]}} , imm[31:0]}  : data1 ) ) ) ;
-    
-    wire [63:0] cla_add_result , cla_sub_result;
-    wire cla_add_carry_out , cla_sub_carry_out;
-    wire [63:0] cla_data1 , cla_data2 , Tcmp_cla_data2 , Ocmp_cla_data2;
+
     Complement_generator cmp(cla_data2 , Ocmp_cla_data2 , Tcmp_cla_data2);
     CLA cla_add( cla_data1 , cla_data2 , 1'b0 , cla_add_result , cla_add_carry_out);
     CLA cla_sub( cla_data1 , Tcmp_cla_data2 , 1'b0 , cla_sub_result , cla_sub_carry_out);
 
 //DIV
+    wire [63:0] div_data1 , div_data2 , quotient , remainder;
     assign div_data1 = data1;
     assign div_data2 = data2;
-    wire [63:0] div_data1 , div_data2 , quotient , remainder;
     divider div(div_data1,div_data2,quotient , remainder);
 //branch  count
     wire [63:0]branchcount,jalrcount;
@@ -160,23 +160,31 @@ module ALU(
     wire pc_carry;
     CLA PC_ctrl({32'd0,pc},64'd4,1'b0,next_pc,pc_carry);
 
-    always@(*) begin
-        
+    always@(posedge clk or posedge rst) begin //posedge clk or rst
+        if(rst) begin
+	    pc_branch <= 0;
+            is_branch <= 0;
+            result <= 0;
+            mem_rw <= 0;    // 0:read, 1:write
+            is_load  <= 0;  // 1: load, 0: others
+	end 
+	else begin
+	    
         case(opcode)
             `OP :  begin
-                            is_load = 0;
-                            mem_rw = 0;
+                            is_load <= 0;
+                            mem_rw <= 0;
                             case(func3)
                                 `ADD_SUB_MUL :  begin
                                             case(func7)
                                                 `ADD_func7 :  begin
-                                                        result = cla_add_result[63:0];
+                                                        result <= cla_add_result[63:0];
                                                     end
                                                 `SUB_func7 :  begin
-                                                        result = cla_sub_result[63:0];
+                                                        result <= cla_sub_result[63:0];
                                                     end
                                                 `MUL_func7 :  begin
-                                                        result = mul_result_signed[63:0]; 
+                                                        result <= mul_result_signed[63:0]; 
                                                     end
                                                 default :   begin
 
@@ -188,10 +196,10 @@ module ALU(
                                 `SLL :  begin
                                             case(func7)
                                                 `SLL_func7 :  begin
-                                                        result = ((data1) << (data2)); 
+                                                        result <= ((data1) << (data2)); 
                                                     end
                                                 `MULH_func7 :  begin
-                                                        result = mul_result_signed[127:64]; 
+                                                        result <= mul_result_signed[127:64]; 
                                                     end
                                                 default :   begin
 
@@ -203,15 +211,15 @@ module ALU(
                                 `SLT :  begin
                                             case(func7)
                                                 `SLT_func7 :  begin
-                                                        if($signed(data1)<$signed(data2)) begin
-                                                            result = 64'h0000000000000001;
+                                                        if(signed_data1<signed_data2) begin
+                                                            result <= 64'h0000000000000001;
                                                         end
                                                         else begin
-                                                            result = 64'h0000000000000000;
+                                                            result <= 64'h0000000000000000;
                                                         end
                                                     end
                                                 `MULHSU_func7 :  begin
-                                                        result = mul_result_signed_hsu[127:64]; 
+                                                        result <= mul_result_signed_hsu[127:64]; 
                                                     end
                                                 default :   begin
 
@@ -224,14 +232,14 @@ module ALU(
                                             case(func7)
                                                 `SLTU_func7 :  begin
                                                         if(data1<data2) begin
-                                                            result = 64'h0000000000000001;
+                                                            result <= 64'h0000000000000001;
                                                         end
                                                         else begin
-                                                            result = 64'h0000000000000000;
+                                                            result <= 64'h0000000000000000;
                                                         end
                                                     end
                                                 `MULHU_func7 :  begin
-                                                        result = mul_result[127:64]; 
+                                                        result <= mul_result[127:64]; 
                                                     end
                                                 default :   begin
 
@@ -243,10 +251,10 @@ module ALU(
                                 `XOR_DIV :  begin
                                             case(func7)
                                                 `XOR_func7 :  begin
-                                                        result = data1 ^ data2;
+                                                        result <= data1 ^ data2;
                                                     end
                                                 `DIV_func7 :  begin
-                                                        result = quotient;
+                                                        result <= quotient;
                                                     end
                                                 default :   begin
 
@@ -258,13 +266,13 @@ module ALU(
                                 `SRL_SRA :  begin
                                             case(func7)
                                                 `SRL_func7 :  begin
-                                                        result = (data1 >> (data2));
+                                                        result <= (data1 >> (data2));
                                                     end
                                                 `SRA_func7 :  begin
-                                                        result = $signed(data1) >> (data2&64'h000000000000001F);
+                                                        result <= signed_data1 >> (data2&64'h000000000000001F);
                                                     end
                                                 `DIVU_func7 :  begin
-                                                        result = quotient;
+                                                        result <= quotient;
                                                     end
                                                 default :   begin
 
@@ -276,10 +284,10 @@ module ALU(
                                 `OR :   begin
                                             case(func7)
                                                 `OR_func7 :  begin
-                                                        result = data1 | data2;
+                                                        result <= data1 | data2;
                                                     end
                                                 `REM_func7 :  begin
-                                                        result = remainder ;
+                                                        result <= remainder ;
                                                     end
                                                 default :   begin
 
@@ -291,10 +299,10 @@ module ALU(
                                 `AND :  begin
                                             case(func7)
                                                 `AND_func7 :  begin
-                                                        result = data1 & data2;
+                                                        result <= data1 & data2;
                                                     end
                                                 `REMU_func7 :  begin
-                                                        result = remainder ;
+                                                        result <= remainder ;
                                                     end
                                                 default :   begin
 
@@ -310,19 +318,19 @@ module ALU(
                             endcase
                     end
             `OP_32 :  begin
-                            is_load = 0;
-                            mem_rw = 0;
+                            is_load <= 0;
+                            mem_rw <= 0;
                             case(func3)
                                 `ADD_SUB_MUL :  begin
                                             case(func7)
                                                 `ADD_func7 :  begin
-                                                        result = {{32{cla_add_result[31]}},cla_add_result[31:0]};
+                                                        result <= {{32{cla_add_result[31]}},cla_add_result[31:0]};
                                                     end
                                                 `SUB_func7 :  begin
-                                                        result = {{32{cla_sub_result[31]}},cla_sub_result[31:0]};
+                                                        result <= {{32{cla_sub_result[31]}},cla_sub_result[31:0]};
                                                     end
                                                 `MULW_func7 :  begin
-                                                        result = {{32{mul_result_signed[31]}},mul_result_signed[31:0]}; 
+                                                        result <= {{32{mul_result_signed[31]}},mul_result_signed[31:0]}; 
                                                     end
                                                 default :   begin
 
@@ -331,31 +339,31 @@ module ALU(
                                             endcase
                                     end
                                 `SLL :  begin
-                                        result = {{32{data1_32[31-data2_32]}},$signed(data1_32 << (data2_32))};
+                                        result <= {{32{data1_32[31-data2_32]}},$signed(data1_32 << (data2_32))};
                                     end
                                 `SLT :  begin
-                                        if($signed(data1_32) < $signed(data2_32)) begin
-                                            result = 64'h0000000000000001;
+                                        if(signed_data1_32 < signed_data2_32) begin
+                                            result <= 64'h0000000000000001;
                                         end
                                         else begin
-                                            result = 64'h0000000000000000;
+                                            result <= 64'h0000000000000000;
                                         end
                                     end
                                 `SLTU :  begin
                                         if(data1_32 < data2_32) begin
-                                            result = 64'h0000000000000001;
+                                            result <= 64'h0000000000000001;
                                         end
                                         else begin
-                                            result = 64'h0000000000000000;
+                                            result <= 64'h0000000000000000;
                                         end
                                     end
                                 `XOR_DIV :  begin
                                             case(func7)
                                                 `XOR_func7 :  begin
-                                                    result = {{32{signed_data1_32[31]^signed_data2_32[31]}},$signed(signed_data1_32^signed_data2_32)};
+                                                    result <= {{32{signed_data1_32[31]^signed_data2_32[31]}},$signed(signed_data1_32^signed_data2_32)};
                                                     end
                                                 `DIVW_func7 :  begin
-                                                    result = {{32{quotient[31]}},quotient[31:0]};
+                                                    result <= {{32{quotient[31]}},quotient[31:0]};
                                                     end
                                                 default :   begin
 
@@ -367,13 +375,13 @@ module ALU(
                                 `SRL_SRA :  begin
                                             case(func7)
                                                 `SRL_func7 :  begin
-                                                            result = {{32{data1_32[31]}},$signed(data1_32 >> (data2_32))};
+                                                            result <= {{32{data1_32[31]}},$signed(data1_32 >> (data2_32))};
                                                     end
                                                 `SRA_func7 :  begin
-                                                            result = {{32{data1_32[31]}},$signed(signed_data1_32 >> (data2_32 & 32'h0000001F))};
+                                                            result <= {{32{data1_32[31]}},$signed(signed_data1_32 >> (data2_32 & 32'h0000001F))};
                                                     end
                                                 `DIVUW_func7 :  begin
-                                                    result = {{32{quotient[31]}},quotient[31:0]};
+                                                    result <= {{32{quotient[31]}},quotient[31:0]};
                                                     end
                                                 default :   begin
 
@@ -385,10 +393,10 @@ module ALU(
                                 `OR :   begin
                                             case(func7)
                                                 `OR_func7 :  begin
-                                                            result = {{32{signed_data1_32[31] | signed_data2_32[31]}},$signed(signed_data1_32 | signed_data2_32)};
+                                                            result <= {{32{signed_data1_32[31] | signed_data2_32[31]}},$signed(signed_data1_32 | signed_data2_32)};
                                                     end
                                                 `REMW_func7 :  begin
-                                                    result = {{32{remainder[31]}},remainder[31:0]};
+                                                    result <= {{32{remainder[31]}},remainder[31:0]};
                                                     end
                                                 default :   begin
 
@@ -400,10 +408,10 @@ module ALU(
                                 `AND :  begin
                                             case(func7)
                                                 `AND_func7 :  begin
-                                                            result = {{32{signed_data1_32[31] & signed_data2_32[31]}},$signed(signed_data1_32 & signed_data2_32)};
+                                                            result <= {{32{signed_data1_32[31] & signed_data2_32[31]}},$signed(signed_data1_32 & signed_data2_32)};
                                                     end
                                                 `REMUW_func7 :  begin
-                                                    result = {{32{remainder[31]}},remainder[31:0]};
+                                                    result <= {{32{remainder[31]}},remainder[31:0]};
                                                     end
                                                 default :   begin
 
@@ -419,41 +427,41 @@ module ALU(
                             endcase
                     end
             `OP_imm :  begin
-                        is_load = 0;
-                        mem_rw = 0;
+                        is_load <= 0;
+                        mem_rw <= 0;
                         case(func3)
                                 `ADD_SUB_MUL :  begin
-                                        result = cla_add_result;
+                                        result <= cla_add_result;
                                     end
                                 `SLL :  begin
-                                            result = data1 << imm;
+                                            result <= data1 << imm;
                                     end
                                 `SLT :  begin
                                         if(signed_data1 < signed_imm) begin
-                                            result = 64'h0000000000000001;
+                                            result <= 64'h0000000000000001;
                                         end
                                         else begin
-                                            result = 64'h0000000000000000;
+                                            result <= 64'h0000000000000000;
                                         end
                                     end
                                 `SLTU :  begin
                                         if(data1 < imm) begin
-                                            result = 64'h0000000000000001;
+                                            result <= 64'h0000000000000001;
                                         end
                                         else begin
-                                            result = 64'h0000000000000000;
+                                            result <= 64'h0000000000000000;
                                         end
                                     end
                                 `XOR_DIV :  begin
-                                        result = data1 ^ signed_imm;
+                                        result <= data1 ^ signed_imm;
                                     end
                                 `SRL_SRA :  begin
                                             case(func7)
                                                 `SRL_func7 :  begin
-                                                            result = data1 >> imm;
+                                                            result <= data1 >> imm;
                                                     end
                                                 `SRA_func7 :  begin
-                                                            result = $unsigned(signed_data1 >> (signed_imm&64'h000000000000003F));
+                                                            result <= $unsigned(signed_data1 >> (signed_imm&64'h000000000000003F));
                                                     
                                                     end
                                                 default :   begin
@@ -464,10 +472,10 @@ module ALU(
 
                                     end
                                 `OR :   begin
-                                        result = data1 | signed_imm;
+                                        result <= data1 | signed_imm;
                                     end
                                 `AND :  begin
-                                        result = data1 & signed_imm;
+                                        result <= data1 & signed_imm;
                                     end
                                 default :  begin
 
@@ -477,42 +485,42 @@ module ALU(
                     end
             `OP_imm_32 :  begin
                 
-                        is_load = 0;
-                        mem_rw = 0;
+                        is_load <= 0;
+                        mem_rw <= 0;
                         case(func3)
                                 `ADD_SUB_MUL :  begin
-                                        result = {{32{cla_add_result[31]}},cla_add_result[31:0]};
+                                        result <= {{32{cla_add_result[31]}},cla_add_result[31:0]};
                                     end
                                 `SLL :  begin
-                                        result = {{32{signed_data1_32[31-imm_32]}},$signed(signed_data1_32 << imm_32)};
+                                        result <= {{32{signed_data1_32[31-imm_32]}},$signed(signed_data1_32 << imm_32)};
                                         
                                     end
                                 `SLT :  begin
                                         if(signed_data1_32 < signed_imm_32) begin
-                                            result = 64'h0000000000000001;
+                                            result <= 64'h0000000000000001;
                                         end
                                         else begin
-                                            result = 64'h0000000000000000;
+                                            result <= 64'h0000000000000000;
                                         end
                                     end
                                 `SLTU :  begin
                                         if(data1_32 < imm_32) begin
-                                            result = 64'h0000000000000001;
+                                            result <= 64'h0000000000000001;
                                         end
                                         else begin
-                                            result = 64'h0000000000000000;
+                                            result <= 64'h0000000000000000;
                                         end
                                     end
                                 `XOR_DIV :  begin
-                                        result = {{32{signed_data1_32[31] | signed_imm_32[31]}},$signed(signed_data1_32 ^ signed_imm_32)};
+                                        result <= {{32{signed_data1_32[31] | signed_imm_32[31]}},$signed(signed_data1_32 ^ signed_imm_32)};
                                     end
                                 `SRL_SRA :  begin
                                             case(func7)
                                                 `SRL_func7 :  begin
-                                                        result = {{32{data1_32[31]}},$signed($unsigned(data1_32 >> imm_32))};
+                                                        result <= {{32{data1_32[31]}},$signed($unsigned(data1_32 >> imm_32))};
                                                     end
                                                 `SRA_func7 :  begin
-                                                        result = {{32{signed_data1_32[31]}},$signed($signed(data1_32) >> (imm_32 & 64'h000000000000001F))};
+                                                        result <= {{32{signed_data1_32[31]}},$signed(signed_data1_32 >> (imm_32 & 64'h000000000000001F))};
                                                     end
                                                 default :   begin
 
@@ -522,10 +530,10 @@ module ALU(
 
                                     end
                                 `OR :   begin
-                                        result = {{32{signed_data1_32[31] | signed_imm_32[31]}},$signed(signed_data1_32 | signed_imm_32)};
+                                        result <= {{32{signed_data1_32[31] | signed_imm_32[31]}},$signed(signed_data1_32 | signed_imm_32)};
                                     end
                                 `AND :  begin
-                                        result = {{32{signed_data1_32[31] & signed_imm_32[31]}},$signed(signed_data1_32 & signed_imm_32)};
+                                        result <= {{32{signed_data1_32[31] & signed_imm_32[31]}},$signed(signed_data1_32 & signed_imm_32)};
                                     end
                                 default :  begin
 
@@ -536,32 +544,32 @@ module ALU(
             `LOAD :  begin
                     case(func3)
                             `LB :  begin
-                                is_load = 1;
-                                mem_rw = 0;
+                                is_load <= 1;
+                                mem_rw <= 0;
                                 end
                             `LH :  begin
-                                is_load = 1;
-                                mem_rw = 0;
+                                is_load <= 1;
+                                mem_rw <= 0;
                                 end
                             `LW :  begin
-                                is_load = 1;
-                                mem_rw = 0;
+                                is_load <= 1;
+                                mem_rw <= 0;
                                 end
                             `LD :  begin
-                                is_load = 1;
-                                mem_rw = 0;
+                                is_load <= 1;
+                                mem_rw <= 0;
                                 end
                             `LBU :  begin
-                                is_load = 1;
-                                mem_rw = 0;
+                                is_load <= 1;
+                                mem_rw <= 0;
                                 end
                             `LHU :  begin
-                                is_load = 1;
-                                mem_rw = 0;
+                                is_load <= 1;
+                                mem_rw <= 0;
                                 end
                             `LWU :   begin
-                                is_load = 1;
-                                mem_rw = 0;
+                                is_load <= 1;
+                                mem_rw <= 0;
                                 end
                             default :  begin
                                 end
@@ -571,20 +579,20 @@ module ALU(
             `STORE :  begin
                         case(func3)
                                 `SD :  begin
-                                    is_load = 0;
-                                    mem_rw = 1;
+                                    is_load <= 0;
+                                    mem_rw <= 1;
                                     end
                                 `SB :  begin
-                                    is_load = 0;
-                                    mem_rw = 1;
+                                    is_load <= 0;
+                                    mem_rw <= 1;
                                     end
                                 `SH :  begin
-                                    is_load = 0;
-                                    mem_rw = 1;
+                                    is_load <= 0;
+                                    mem_rw <= 1;
                                     end
                                 `SW :  begin
-                                    is_load = 0;
-                                    mem_rw = 1;
+                                    is_load <= 0;
+                                    mem_rw <= 1;
                                     end
                                 default :  begin
 
@@ -593,106 +601,107 @@ module ALU(
                             endcase
                     end
             `BRANCH :  begin
-                        is_load = 0;
-                        mem_rw = 0;
+                        is_load <= 0;
+                        mem_rw <= 0;
                         case(func3)
                                 `BEQ :  begin
                                         if(data1==data2)    begin
-                                            is_branch = 1;
-                                            pc_branch = branchcount[31:0];
+                                            is_branch <= 1;
+                                            pc_branch <= branchcount[31:0];
                                         end
                                         else begin
-                                            is_branch = 0;
-                                            pc_branch = next_pc[31:0];
+                                            is_branch <= 0;
+                                            pc_branch <= next_pc[31:0];
                                         end
                                     end
                                 `BNE :  begin
                                         if(data1!=data2)    begin
-                                            is_branch = 1;
-                                            pc_branch = branchcount[31:0];
+                                            is_branch <= 1;
+                                            pc_branch <= branchcount[31:0];
                                         end
                                         else begin
-                                            is_branch = 0;
-                                            pc_branch = next_pc[31:0];
+                                            is_branch <= 0;
+                                            pc_branch <= next_pc[31:0];
                                         end
                                     end
                                 `BLT :  begin
                                         if($signed(data1) < $signed(data2))    begin
-                                            is_branch = 1;
-                                            pc_branch = branchcount[31:0];
+                                            is_branch <= 1;
+                                            pc_branch <= branchcount[31:0];
                                         end
                                         else begin
-                                            is_branch = 0;
-                                            pc_branch = next_pc[31:0];
+                                            is_branch <= 0;
+                                            pc_branch <= next_pc[31:0];
                                         end
                                     end
                                 `BGE :  begin
                                         if($signed(data1) >= $signed(data2))    begin
-                                            is_branch = 1;
-                                            pc_branch = branchcount[31:0];
+                                            is_branch <= 1;
+                                            pc_branch <= branchcount[31:0];
                                         end
                                         else begin
-                                            is_branch = 0;
-                                            pc_branch = next_pc[31:0];
+                                            is_branch <= 0;
+                                            pc_branch <= next_pc[31:0];
                                         end
                                     end
                                 `BLTU :  begin
                                         if(data1 < data2)    begin
-                                            is_branch = 1;
-                                            pc_branch = branchcount[31:0];
+                                            is_branch <= 1;
+                                            pc_branch <= branchcount[31:0];
                                         end
                                         else begin
-                                            is_branch = 0;
-                                            pc_branch = next_pc[31:0];
+                                            is_branch <= 0;
+                                            pc_branch <= next_pc[31:0];
                                         end
                                     end
                                 `BGEU :  begin
                                         if(data1 >= data2)    begin
-                                            is_branch = 1;
-                                            pc_branch = branchcount[31:0];
+                                            is_branch <= 1;
+                                            pc_branch <= branchcount[31:0];
                                         end
                                         else begin
-                                            is_branch = 0;
-                                            pc_branch = next_pc[31:0];
+                                            is_branch <= 0;
+                                            pc_branch <= next_pc[31:0];
                                         end
                                     end
                                 default :  begin
-                                        is_branch = 0;
-                                        pc_branch = next_pc[31:0];
+                                        is_branch <= 0;
+                                        pc_branch <= next_pc[31:0];
                                     end
                                     
                             endcase
                     end
             `JAL :  begin
                 
-                        is_load = 0;
-                        mem_rw = 0;
-                        is_branch = 1;
-                        pc_branch = pc + $signed( imm[20:0] );
+                        is_load <= 0;
+                        mem_rw <= 0;
+                        is_branch <= 1;
+                        pc_branch <= pc + $signed( imm[20:0] );
                     end
             `JALR :  begin
-                        is_load = 0;
-                        mem_rw = 0;
-                        is_branch = 1;
-                        pc_branch = $signed( data1 + $signed(imm[11:0]) );
+                        is_load <= 0;
+                        mem_rw <= 0;
+                        is_branch <= 1;
+                        pc_branch <= $signed( data1 + $signed(imm[11:0]) );
                     end
             `AUIPC :  begin
-                        is_load = 0;
-                        mem_rw = 0;
-                        result =  pc  + $signed({imm[19:0], 12'b0});
+                        is_load <= 0;
+                        mem_rw <= 0;
+                        result <=  pc  + $signed({imm[19:0], 12'b0});
                     end
             `LUI :  begin
-                        is_load = 0;
-                        mem_rw = 0;
-                        result = $signed({ imm[19:0] , 12'b0 });
+                        is_load <= 0;
+                        mem_rw <= 0;
+                        result <= $signed({ imm[19:0] , 12'b0 });
                     end
             default :  begin
-                        is_load = 0;
-                        mem_rw = 0;
-                        result = 0;
+                        is_load <= 0;
+                        mem_rw <= 0;
+                        result <= 0;
                     end
         endcase
-    
+
+	end    
     end
 
 endmodule
@@ -983,3 +992,4 @@ assign remainder = (divisor == 0) ? dividend :
 
 
 endmodule
+
