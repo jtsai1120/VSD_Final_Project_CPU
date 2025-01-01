@@ -42,7 +42,7 @@
 `define NOP_func3 3'b000
 `define NOP_imm 12'b000000000000
 module ID (rs1,rs2,rs1_data_control,opcode, data1, data2, rd, func3, func7, imm_ext, clk, rst, inst, wdata, wrd, wopcode,rs1_addr_control,flush);
-parameter R_type = 110011;
+parameter R_type = 0110011;
 input clk, rst,flush;
 input [31:0] inst;
 input [63:0] wdata; // write back data
@@ -86,27 +86,27 @@ always @(posedge clk or negedge clk or posedge rst or posedge flush)begin
     end
     else begin
         if(~clk)begin
-        case(wrd)
-        rs1:begin
-            if(rs1!=0)
-            data1<=wdata;
-            else
-            data1<=0;
+            case(wrd)
+            rs1:begin
+                if(rs1!=0)
+                data1<=wdata;
+                else
+                data1<=0;
 
-            data2<=data2;
-        end
-        rs2:begin
-            data1<=data1;
-            if(rs2!=0)
-            data2<=wdata;
-            else
-            data2<=0;
-        end
-        default:begin
-            data1<=data1;
-            data2<=data2;
-        end
-        endcase
+                data2<=data2;
+            end
+            rs2:begin
+                data1<=data1;
+                if(rs2!=0)
+                data2<=wdata;
+                else
+                data2<=0;
+            end
+            default:begin
+                data1<=data1;
+                data2<=data2;
+            end
+            endcase
         end
         else begin
             data1<=RF[`R_rs1];

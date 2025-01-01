@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-`ifdef syn
+/*`ifdef syn
     `include "top_syn.v"
     `include "tsmc18.v"
 `else
@@ -8,7 +8,7 @@
 `endif
 
 `include "Inst_Mem.v"
-`include "Data_Mem.v"
+`include "Data_Mem.v"*/
 
 `define HALF_CLK_TIME 10
 
@@ -26,16 +26,16 @@ wire [63:0] tb_read_data;
 
 top top(halt, mem_data, mem_rw, addr, pc, clk, rst, inst);
 Inst_Mem Inst_Mem(inst, pc);
-Data_Mem Data_Mem(mem_data, clk, rst, mem_rw, addra);
+Data_Mem Data_Mem(mem_data, clk, rst, mem_rw, addr);
 
-`ifdef syn
+/*`ifdef syn
     initial $sdf_annotate("top_syn.sdf", CPU);
 `endif
 
-initial begin : waveform
+/*initial begin : waveform
     $dumpfile("tb.fsdb");
     $dumpvars(0, testbench);
-end
+end*/
 
 initial begin : clk_gen
     clk = 0;
@@ -44,6 +44,7 @@ end
 
 initial begin : terminal_display
     $display("---Simulation Start---");
+    $monitor("t0=%d,t1=%d,t2=%d,t3=%d,t4=%d",top.ID.RF[5],top.ID.RF[6],top.ID.RF[7],top.ID.RF[28],top.ID.RF[29]);
     //$monitor("clk=%b, rst=%b, inst=%h, pc=%h, mem_data=%h, addr=%h, mem_rw=%b,NOP=%b,flush=%b", clk, rst, inst, pc, mem_data, addr, mem_rw,top.NOP,top.flush);
 end
 
@@ -53,10 +54,12 @@ integer f_prv2, f_prv1, f_cur;
 
 initial begin : execute
     rst = 1;
+    $readmemb("fibo_Mnemonic.prog", Inst_Mem.IM);
+     
     #(`HALF_CLK_TIME * 20) rst = 0;
     
     // Load Test Program
-    `ifdef sorting
+   /* `ifdef sorting
         $readmemb("./test_prog/sort_Mnemonic.prog", Inst_Mem.IM);
         //$readmemb("./test_prog/sort_data.prog", Data_Mem.DM);
     `elsif single
@@ -64,12 +67,12 @@ initial begin : execute
     `else 
         //$readmemb("./test_prog/fibo_Mnemonic.prog", Inst_Mem.IM);\
         $readmemb("fibo_Mnemonic.prog", Inst_Mem.IM);
-    `endif
+    `endif*/
 end
 
 always @(posedge halt) begin
     $display("Halt ... ");
-    `ifdef sorting
+   /* `ifdef sorting
         error_flag = 0;
         for (i = 1; i <= 10; i = i + 1) begin
             if (Data_Mem.DM[i+10] != i - 4) begin // -3 ~ 6
@@ -95,7 +98,7 @@ always @(posedge halt) begin
             $display("Passed All Testcases!");
         else 
             $display("Failed at Section %d!", Data_Mem.DM[0]);
-    `else
+    `else*/
         if (Data_Mem.comb_DM[1] != 1) error_flag = 1;
         else if (Data_Mem.comb_DM[2] != 1) error_flag = 2;
         else begin
@@ -119,7 +122,7 @@ always @(posedge halt) begin
 
         for (i = 1; i <= ((error_flag)? error_flag : 20); i = i + 1)
             $display("f(%2d) = %6d", i, Data_Mem.comb_DM[i]);
-    `endif
+    //`endif
 
     $display("---Simulation End---");
     $finish;

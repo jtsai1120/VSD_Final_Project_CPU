@@ -1,4 +1,3 @@
-
 module EX(
         input clk, rst,
         input [6:0] opcode,
@@ -15,7 +14,7 @@ module EX(
         output reg is_load   // 1: load, 0: others
     );
     /*opcode type*/
-    `define OP 7'b0110011
+    `define op_64 7'b0110011
     `define OP_32 7'b0111011
     `define OP_imm 7'b0010011
     `define OP_imm_32 7'b0011011
@@ -127,25 +126,26 @@ module EX(
 
 //CLA 
 //64bits AS
-
-    assign cla_data1 = data1;
-    assign cla_data2 = 
-    (opcode == `OP ) ? data2 : 
-    ((opcode == `OP_32) ? {{32{data2[31]}} , data2[31:0]} : 
-    ((opcode == `OP_imm) ? imm :
-    ((opcode == `OP_imm) ? {{32{imm[31]}} , imm[31:0]}  : data1 ) ) ) ;
     
     wire [63:0] cla_add_result , cla_sub_result;
     wire cla_add_carry_out , cla_sub_carry_out;
     wire [63:0] cla_data1 , cla_data2 , Tcmp_cla_data2 , Ocmp_cla_data2;
+    
+    assign cla_data1 = data1;
+    assign cla_data2 = 
+    (opcode == `op_64 ) ? data2 : 
+    ((opcode == `OP_32) ? {{32{data2[31]}} , data2[31:0]} : 
+    ((opcode == `OP_imm) ? imm :
+    ((opcode == `STORE | opcode == `LOAD) ?  imm : data2 ) ) ) ;
+    
     Complement_generator cmp(cla_data2 , Ocmp_cla_data2 , Tcmp_cla_data2);
     CLA cla_add( cla_data1 , cla_data2 , 1'b0 , cla_add_result , cla_add_carry_out);
     CLA cla_sub( cla_data1 , Tcmp_cla_data2 , 1'b0 , cla_sub_result , cla_sub_carry_out);
 
 //DIV
+    wire [63:0] div_data1 , div_data2 , quotient , remainder;
     assign div_data1 = data1;
     assign div_data2 = data2;
-    wire [63:0] div_data1 , div_data2 , quotient , remainder;
     divider div(div_data1,div_data2,quotient , remainder);
 //branch  count
     wire [63:0]branchcount,jalrcount;
@@ -161,10 +161,11 @@ module EX(
     wire pc_carry;
     CLA PC_ctrl({32'd0,pc},64'd4,1'b0,next_pc,pc_carry);
 
-    always@(*) begin
-        
+    always@(*) begin //posedge clk or rst
+        is_branch = 0;
+        pc_branch = 0;
         case(opcode)
-            `OP :  begin
+            `op_64 :  begin
                             is_load = 0;
                             mem_rw = 0;
                             case(func3)
@@ -204,7 +205,7 @@ module EX(
                                 `SLT :  begin
                                             case(func7)
                                                 `SLT_func7 :  begin
-                                                        if($signed(data1)<$signed(data2)) begin
+                                                        if(signed_data1<signed_data2) begin
                                                             result = 64'h0000000000000001;
                                                         end
                                                         else begin
@@ -262,7 +263,7 @@ module EX(
                                                         result = (data1 >> (data2));
                                                     end
                                                 `SRA_func7 :  begin
-                                                        result = $signed(data1) >> (data2&64'h000000000000001F);
+                                                        result = signed_data1 >> (data2&64'h000000000000001F);
                                                     end
                                                 `DIVU_func7 :  begin
                                                         result = quotient;
@@ -335,7 +336,7 @@ module EX(
                                         result = {{32{data1_32[31-data2_32]}},$signed(data1_32 << (data2_32))};
                                     end
                                 `SLT :  begin
-                                        if($signed(data1_32) < $signed(data2_32)) begin
+                                        if(signed_data1_32 < signed_data2_32) begin
                                             result = 64'h0000000000000001;
                                         end
                                         else begin
@@ -513,7 +514,7 @@ module EX(
                                                         result = {{32{data1_32[31]}},$signed($unsigned(data1_32 >> imm_32))};
                                                     end
                                                 `SRA_func7 :  begin
-                                                        result = {{32{signed_data1_32[31]}},$signed($signed(data1_32) >> (imm_32 & 64'h000000000000001F))};
+                                                        result = {{32{signed_data1_32[31]}},$signed(signed_data1_32 >> (imm_32 & 64'h000000000000001F))};
                                                     end
                                                 default :   begin
 
@@ -535,6 +536,7 @@ module EX(
                             endcase
                     end
             `LOAD :  begin
+                    result = cla_add_result[63:0];
                     case(func3)
                             `LB :  begin
                                 is_load = 1;
@@ -570,6 +572,7 @@ module EX(
                         endcase
                 end
             `STORE :  begin
+                    result = cla_add_result[63:0];
                         case(func3)
                                 `SD :  begin
                                     is_load = 0;
@@ -670,12 +673,14 @@ module EX(
                         mem_rw = 0;
                         is_branch = 1;
                         pc_branch = pc + $signed( imm[20:0] );
+                        result = {32'd0,(pc + 32'd4)};
                     end
             `JALR :  begin
                         is_load = 0;
                         mem_rw = 0;
                         is_branch = 1;
                         pc_branch = $signed( data1 + $signed(imm[11:0]) );
+                        result = {32'd0,(pc + 32'd4)};
                     end
             `AUIPC :  begin
                         is_load = 0;
@@ -984,3 +989,4 @@ assign remainder = (divisor == 0) ? dividend :
 
 
 endmodule
+
