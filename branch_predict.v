@@ -14,7 +14,7 @@ module gshare_predictor (
     parameter BHT_SIZE = 256;   
 
     reg [GHR_BITS-1:0] GHR;      
-    reg [1:0] BHT[BHT_SIZE-1:0]; 
+    reg [1:0] BHT[0:BHT_SIZE-1]; 
 
     wire [7:0] index;           
     wire [7:0] update_index;
