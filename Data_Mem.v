@@ -22,13 +22,13 @@ input mem_rw;
 input [63:0] addr;
 inout [63:0] mem_data;
 
-reg [7:0] DM [0:Size-1];
+reg signed [7:0] DM [0:Size-1];
 
 assign mem_data = (mem_rw)? 64'bz : {DM[addr],DM[addr+1],DM[addr+2],DM[addr+3],DM[addr+4],DM[addr+5],DM[addr+6],DM[addr+7]};
 
 integer j;
 
-reg [63:0] comb_DM [0:Size-1];
+reg signed [63:0] comb_DM [0:Size-1];
 
 always @(*) begin
     for (j = 0; j < Size; j = j + 1)

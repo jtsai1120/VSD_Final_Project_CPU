@@ -129,14 +129,13 @@ always@(rst or ID_EX_opcode)begin
         halt_happen=halt_happen;
 end
 
-
-
-
 always@(posedge clk  or posedge rst  )begin
     if(rst)
         IF_ID_inst<={25'b0,`NOP_opcode};
     else if(NOP)
         IF_ID_inst<=IF_ID_inst;
+    else if(flush || halt_happen)
+        IF_ID_inst<={25'b0,`NOP_opcode};
     else if(flush || halt_happen)
         IF_ID_inst<={25'b0,`NOP_opcode};
     else

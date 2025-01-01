@@ -1,6 +1,6 @@
-`timescale 1ns/1ps
+`timescale 1ns/1ns
 
-/*`ifdef syn
+`ifdef syn
     `include "top_syn.v"
     `include "tsmc18.v"
 `else
@@ -8,7 +8,7 @@
 `endif
 
 `include "Inst_Mem.v"
-`include "Data_Mem.v"*/
+`include "Data_Mem.v"
 
 `define HALF_CLK_TIME 10
 
@@ -28,14 +28,14 @@ top top(halt, mem_data, mem_rw, addr, pc, clk, rst, inst);
 Inst_Mem Inst_Mem(inst, pc);
 Data_Mem Data_Mem(mem_data, clk, rst, mem_rw, addr);
 
-/*`ifdef syn
+`ifdef syn
     initial $sdf_annotate("top_syn.sdf", CPU);
 `endif
 
-/*initial begin : waveform
+/* initial begin : waveform
     $dumpfile("tb.fsdb");
     $dumpvars(0, testbench);
-end*/
+end */
 
 initial begin : clk_gen
     clk = 0;
@@ -44,12 +44,14 @@ end
 
 initial begin : terminal_display
     $display("---Simulation Start---");
-    $monitor("t0=%d,t1=%d,t2=%d,t3=%d,t4=%d,t5=%d,t6=%d",top.ID.RF[5],top.ID.RF[6],top.ID.RF[7],top.ID.RF[28],top.ID.RF[29],top.ID.RF[30],top.ID.RF[31]);
+    $monitor("WB_inst = %2d: t0 = %2d,t1 = %2d,t2 = %2d,t3 = %2d,t4 = %2d,t5 = %2d,t6 = %2d, x8 = %2d", 
+            top.ID_EX_pc/4, top.ID.RF[5],top.ID.RF[6],top.ID.RF[7],top.ID.RF[28],top.ID.RF[29],top.ID.RF[30],top.ID.RF[31], top.ID.RF[8]);
     //$monitor("clk=%b, rst=%b, inst=%h, pc=%h, mem_data=%h, addr=%h, mem_rw=%b,NOP=%b,flush=%b", clk, rst, inst, pc, mem_data, addr, mem_rw,top.NOP,top.flush);
 end
 
 integer i;
 integer error_flag;
+integer pre_value;
 integer f_prv2, f_prv1, f_cur;
 
 initial begin : execute
@@ -61,44 +63,42 @@ initial begin : execute
     // Load Test Program
    /* `ifdef sorting
         $readmemb("./test_prog/sort_Mnemonic.prog", Inst_Mem.IM);
-        //$readmemb("./test_prog/sort_data.prog", Data_Mem.DM);
     `elsif single
         $readmemb("./test_prog/single_inst_Mnemonic.prog", Inst_Mem.IM);
     `else 
-        //$readmemb("./test_prog/fibo_Mnemonic.prog", Inst_Mem.IM);\
-        $readmemb("fibo_Mnemonic.prog", Inst_Mem.IM);
+        $readmemb("./test_prog/fibo_Mnemonic.prog", Inst_Mem.IM);
     `endif*/
 end
 
 always @(posedge halt) begin
     $display("Halt ... ");
-   /* `ifdef sorting
-        error_flag = 0;
-        for (i = 1; i <= 10; i = i + 1) begin
-            if (Data_Mem.DM[i+10] != i - 4) begin // -3 ~ 6
-                error_flag = 1;
-                i = 11;
-            end
-        end
-        if (error_flag == 0) 
-            $display("Passed Sorting!");
-        else 
-            $display("Failed Sorting!");
+    // `ifdef sorting
+    error_flag = 0;
+    pre_value = Data_Mem.comb_DM[11];
+    for (i = 12; i <= 20; i = i + 1) begin
+        if (Data_Mem.comb_DM[i] < pre_value) error_flag = 1;
+        pre_value = Data_Mem.comb_DM[i];
+    end
+    if (error_flag == 0) 
+        $display("Passed Sorting!");
+    else 
+        $display("Failed Sorting!");
 
-        $display("Before: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d", 
-                Data_Mem.DM[1], Data_Mem.DM[2], Data_Mem.DM[3], 
-                Data_Mem.DM[4], Data_Mem.DM[5], Data_Mem.DM[6], 
-                Data_Mem.DM[7], Data_Mem.DM[8], Data_Mem.DM[9], Data_Mem.DM[10]);
-        $display("After: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d",
-                Data_Mem.DM[11], Data_Mem.DM[12], Data_Mem.DM[13], 
-                Data_Mem.DM[14], Data_Mem.DM[15], Data_Mem.DM[16], 
-                Data_Mem.DM[17], Data_Mem.DM[18], Data_Mem.DM[19], Data_Mem.DM[20]);
-    `elsif single
-        if (Data_Mem.DM[0] == 0) 
+    $display("Before: %1d, %1d, %1d, %1d, %1d, %1d, %1d, %1d, %1d, %1d", 
+            Data_Mem.comb_DM[1], Data_Mem.comb_DM[2], Data_Mem.comb_DM[3], 
+            Data_Mem.comb_DM[4], Data_Mem.comb_DM[5], Data_Mem.comb_DM[6], 
+            Data_Mem.comb_DM[7], Data_Mem.comb_DM[8], Data_Mem.comb_DM[9], Data_Mem.comb_DM[10]);
+    $display("After: %1d, %1d, %1d, %1d, %1d, %1d, %1d, %1d, %1d, %1d",
+            Data_Mem.comb_DM[11], Data_Mem.comb_DM[12], Data_Mem.comb_DM[13], 
+            Data_Mem.comb_DM[14], Data_Mem.comb_DM[15], Data_Mem.comb_DM[16], 
+            Data_Mem.comb_DM[17], Data_Mem.comb_DM[18], Data_Mem.comb_DM[19], Data_Mem.comb_DM[20]);
+/*  `elsif single
+        if (Data_Mem.comb_DM[0] == 0) 
             $display("Passed All Testcases!");
         else 
-            $display("Failed at Section %d!", Data_Mem.DM[0]);
-    `else*/
+            $display("Failed at Section %d!", Data_Mem.comb_DM[0]);
+    `else
+        error_flag = 0;
         if (Data_Mem.comb_DM[1] != 1) error_flag = 1;
         else if (Data_Mem.comb_DM[2] != 1) error_flag = 2;
         else begin
@@ -120,10 +120,10 @@ always @(posedge halt) begin
         else 
             $display("Failed Fibo at f(%2d)!\n", error_flag);
 
-        for (i = 1; i <= ((error_flag)? error_flag : 20); i = i + 1)
-            $display("f(%2d) = %6d", i, Data_Mem.comb_DM[i]);
-    //`endif
-
+        for (i = 1; i <= 20; i = i + 1)
+            $display("f(%2d) = %7d", i, Data_Mem.comb_DM[i]);
+    `endif
+    */    
     $display("---Simulation End---");
     $finish;
 end
