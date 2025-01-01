@@ -18,7 +18,7 @@ output reg [31:0]new_pc;
 output [1:0]ForwardA,ForwardB;
 wire into_predic,update;
 wire EX_MEM_RegWrite,MEM_WB_RegWrite;
-
+wire branch_taken;
 assign EX_MEM_RegWrite=(EX_MEM_opcode != 7'b0100011 && EX_MEM_opcode != 7'b1100011);
 assign MEM_WB_RegWrite=(MEM_WB_opcode != 7'b0100011 && MEM_WB_opcode != 7'b1100011);
 
@@ -43,7 +43,7 @@ ForwardingUnit FU(
 assign into_predic=((inst[6:0]==7'b1100011)||(inst[6:0]==7'b1100111)||(inst[6:0]== 7'b1101111))?1:0;
 assign update=((EX_MEM_opcode==7'b1100011)||(EX_MEM_opcode==7'b1100111)||(EX_MEM_opcode== 7'b1101111))&&clk?1:0;
 assign rs1_addr=inst[19:15];
-
+assign branch_taken=(is_branch&~NOP);
 gshare_predictor predict(
     .start(into_predic),
     .update(update),
@@ -51,7 +51,7 @@ gshare_predictor predict(
     .rst(rst),
     .branch_address(pc[7:0]),
     .opcode(inst[6:0]),
-    .branch_taken(is_branch),
+    .branch_taken(branch_taken),
     .prediction(prediction)
 );
 

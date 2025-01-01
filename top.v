@@ -102,7 +102,7 @@ EX EX(
 );
 // MEM Stage
 assign mem_data = (EX_MEM_mem_rw)?  EX_MEM_data2 : 64'bz ;
-assign out_result=(EX_MEM_result<=8200)?EX_MEM_result:0;
+assign out_result=(EX_MEM_result<=8185)?EX_MEM_result:0;
 WB WB(wdata, MEM_WB_is_load, MEM_WB_result, MEM_WB_mem_data);    
 
 //controller
@@ -129,14 +129,13 @@ always@(rst or ID_EX_opcode)begin
         halt_happen=halt_happen;
 end
 
-
-
-
 always@(posedge clk  or posedge rst  )begin
-    if(rst || halt_happen || flush)
+    if(rst)
         IF_ID_inst<={25'b0,`NOP_opcode};
     else if(NOP)
         IF_ID_inst<=IF_ID_inst;
+    else if(flush || halt_happen)
+        IF_ID_inst<={25'b0,`NOP_opcode};
     else
         IF_ID_inst<=inst;
 end
@@ -180,6 +179,38 @@ always @(posedge clk or posedge rst) begin
         MEM_WB_mem_data <= 0;
         MEM_WB_mem_rw <= 0;
     end
+    else if(NOP) begin
+        // IF -> ID
+        IF_ID_pc <= IF_ID_pc;
+        IF_ID_prediction<=IF_ID_prediction;
+        // ID -> EX
+        ID_EX_rs1<=ID_EX_rs1;
+        ID_EX_rs2<=ID_EX_rs2;
+        ID_EX_pc <= ID_EX_pc;
+        ID_EX_opcode <= ID_EX_opcode;
+        ID_EX_imm <= ID_EX_imm;
+        ID_EX_data1 <= for_ID_EX_data1;
+        ID_EX_data2 <= for_ID_EX_data2;
+        ID_EX_rd <= ID_EX_rd;
+        ID_EX_func3 <= ID_EX_func3;
+        ID_EX_func7 <= ID_EX_func7;
+        ID_EX_prediction <= ID_EX_prediction;
+        // EX -> MEM
+        EX_MEM_opcode <= `NOP_opcode;
+        EX_MEM_pc_branch <= 0;
+        EX_MEM_is_branch <= 0;
+        EX_MEM_rd <= `NOP_rd;
+        EX_MEM_result <= 0;
+        EX_MEM_data2 <= 0;
+        EX_MEM_mem_rw <= 0;
+        EX_MEM_is_load <= 0;
+        MEM_WB_opcode <= EX_MEM_opcode;
+        MEM_WB_rd <= EX_MEM_rd;
+        MEM_WB_result <= EX_MEM_result;
+        MEM_WB_is_load <= EX_MEM_is_load;
+        MEM_WB_mem_data <= mem_data;
+        MEM_WB_mem_rw <= EX_MEM_mem_rw;
+    end
     else if(flush || halt_happen)begin
         IF_ID_pc<=0;
         IF_ID_prediction<=0;
@@ -213,38 +244,6 @@ always @(posedge clk or posedge rst) begin
         MEM_WB_mem_data <= mem_data;
         MEM_WB_mem_rw <= EX_MEM_mem_rw;
     end 
-    else if(NOP) begin
-        // IF -> ID
-        IF_ID_pc <= IF_ID_pc;
-        IF_ID_prediction<=IF_ID_prediction;
-        // ID -> EX
-        ID_EX_rs1<=ID_EX_rs1;
-        ID_EX_rs2<=ID_EX_rs2;
-        ID_EX_pc <= ID_EX_pc;
-        ID_EX_opcode <= ID_EX_opcode;
-        ID_EX_imm <= ID_EX_imm;
-        ID_EX_data1 <= ID_EX_data1;
-        ID_EX_data2 <= ID_EX_data2;
-        ID_EX_rd <= ID_EX_rd;
-        ID_EX_func3 <= ID_EX_func3;
-        ID_EX_func7 <= ID_EX_func7;
-        ID_EX_prediction <= IF_ID_prediction;
-        // EX -> MEM
-        EX_MEM_opcode <= `NOP_opcode;
-        EX_MEM_pc_branch <= 0;
-        EX_MEM_is_branch <= 0;
-        EX_MEM_rd <= `NOP_rd;
-        EX_MEM_result <= 0;
-        EX_MEM_data2 <= 0;
-        EX_MEM_mem_rw <= 0;
-        EX_MEM_is_load <= 0;
-        MEM_WB_opcode <= EX_MEM_opcode;
-        MEM_WB_rd <= EX_MEM_rd;
-        MEM_WB_result <= EX_MEM_result;
-        MEM_WB_is_load <= EX_MEM_is_load;
-        MEM_WB_mem_data <= mem_data;
-        MEM_WB_mem_rw <= EX_MEM_mem_rw;
-        end
     else begin
         // IF -> ID
         IF_ID_pc <= pc;

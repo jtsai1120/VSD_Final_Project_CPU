@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module EX(
         input clk, rst,
         input [6:0] opcode,
