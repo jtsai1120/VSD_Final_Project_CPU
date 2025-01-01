@@ -61,31 +61,30 @@ output     [63:0]rs1_data_control;
 
 reg [63:0] RF [0:31];
 assign rs1_data_control=(wrd==rs1_addr_control)?wdata:RF[rs1_addr_control];
-always @(posedge clk or posedge rst or posedge flush) begin
+always @(inst or rst or flush) begin
     if (rst || flush) begin
-        opcode <= `NOP_opcode;
-        rd <= `NOP_rd;
-        func3 <= `NOP_func3;
-        func7 <= `NOP_func7 ;
-        rs1 <=0;
-        rs2 <=0;
+        opcode = `NOP_opcode;
+        rd = `NOP_rd;
+        func3 = `NOP_func3;
+        func7 = `NOP_func7 ;
+        rs1 =0;
+        rs2 =0;
     end 
     else begin
-        opcode <= `OP;
-        rd <= `R_rd;
-        func3 <= `R_func3;
-        func7 <= `R_func7;
-        rs1<=`R_rs1;
-        rs2<=`R_rs2;
+        opcode = `OP;
+        rd = `R_rd;
+        func3 = `R_func3;
+        func7 = `R_func7;
+        rs1=`R_rs1;
+        rs2=`R_rs2;
     end
-end
-always @(posedge clk or negedge clk or posedge rst or posedge flush)begin
+end 
+always @(negedge clk or posedge rst or posedge flush)begin
     if(rst || flush)begin
         data1<=RF[`NOP_rs1];
         data2<=RF[`NOP_rs2];
     end
     else begin
-        if(~clk)begin
             case(wrd)
             rs1:begin
                 if(rs1!=0)
@@ -93,59 +92,55 @@ always @(posedge clk or negedge clk or posedge rst or posedge flush)begin
                 else
                 data1<=0;
 
-                data2<=data2;
+                data2<=RF[`R_rs2];
             end
             rs2:begin
-                data1<=data1;
+                data1<=RF[`R_rs1];
                 if(rs2!=0)
                 data2<=wdata;
                 else
                 data2<=0;
             end
             default:begin
-                data1<=data1;
-                data2<=data2;
+                data1<=RF[`R_rs1];
+                data2<=RF[`R_rs2];
             end
             endcase
-        end
-        else begin
-            data1<=RF[`R_rs1];
-            data2<=RF[`R_rs2];
-        end
+        
     end
 end
-always @(posedge clk or posedge rst or posedge flush) begin
+always @(rst or flush or inst) begin
     if (rst || flush) begin
-        imm_ext <= 0;
+        imm_ext = 0;
     end
     else begin
         case (`OP)
             'b0010011: begin // I Type (operation)
-                imm_ext <= {{52{inst[31]}}, inst[31:20]};
+                imm_ext = {{52{inst[31]}}, inst[31:20]};
             end
             'b0000011: begin // I Type (operation immediate)
-                imm_ext <= {{52{inst[31]}}, inst[31:20]};
+                imm_ext = {{52{inst[31]}}, inst[31:20]};
             end
             'b1100111: begin // I Type (jalr)
-                imm_ext <= {{52{inst[31]}}, inst[31:20]};
+                imm_ext = {{52{inst[31]}}, inst[31:20]};
             end
             'b0100011: begin // S Type (store)
-                imm_ext <= {{52{inst[31]}}, inst[31:25], inst[11:7]};
+                imm_ext = {{52{inst[31]}}, inst[31:25], inst[11:7]};
             end
             'b1100011: begin // B Type (branch)
-                imm_ext <= {{51{inst[31]}}, inst[31], inst[7], inst[30:25], inst[11:8],1'b0};
+                imm_ext = {{51{inst[31]}}, inst[31], inst[7], inst[30:25], inst[11:8],1'b0};
             end
             'b0110111: begin // U Type (lui)
-                imm_ext <= {{32{inst[31]}}, inst[31:12], 12'b0};
+                imm_ext = {{32{inst[31]}}, inst[31:12], 12'b0};
             end
             'b0010111: begin // U Type (auipc)
-                imm_ext <= {{32{inst[31]}}, inst[31:12], 12'b0};
+                imm_ext = {{32{inst[31]}}, inst[31:12], 12'b0};
             end
             'b1101111: begin // J Type (jal)
-                imm_ext <= {{43{inst[31]}}, inst[31], inst[19:12], inst[20], inst[30:21], 1'b0};
+                imm_ext = {{43{inst[31]}}, inst[31], inst[19:12], inst[20], inst[30:21], 1'b0};
             end
             default: begin // Unknown or R Type (no imm)
-                imm_ext <= 0;
+                imm_ext = 0;
             end
         endcase
     end

@@ -103,7 +103,7 @@ EX EX(
 // MEM Stage
 assign mem_data = (EX_MEM_mem_rw)?  EX_MEM_data2 : 64'bz ;
 assign out_result=(EX_MEM_result<=8200)?EX_MEM_result:0;
-WB WB(wdata, MEM_WB_is_load, MEM_WB_result, MEM_WB_mem_data);
+WB WB(wdata, MEM_WB_is_load, MEM_WB_result, MEM_WB_mem_data);    
 
 //controller
 Controller Controller(ForwardA,ForwardB,control_pc,rs1_addr_control,predictin,NOP,clk,rst,EX_MEM_is_load,ID_EX_opcode,EX_MEM_opcode,MEM_WB_opcode,
@@ -132,10 +132,8 @@ end
 
 
 
-always@(inst or  rst  or halt_happen)begin
-    if(rst)
-        IF_ID_inst={25'b0,`NOP_opcode};
-    else if(halt_happen)
+always@(posedge clk  or posedge rst  )begin
+    if(rst || halt_happen || flush || NOP)
         IF_ID_inst={25'b0,`NOP_opcode};
     else
         IF_ID_inst=inst;
