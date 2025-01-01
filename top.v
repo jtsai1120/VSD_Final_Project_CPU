@@ -133,10 +133,12 @@ end
 
 
 always@(posedge clk  or posedge rst  )begin
-    if(rst || halt_happen || flush || NOP)
-        IF_ID_inst={25'b0,`NOP_opcode};
+    if(rst || halt_happen || flush)
+        IF_ID_inst<={25'b0,`NOP_opcode};
+    else if(NOP)
+        IF_ID_inst<=IF_ID_inst;
     else
-        IF_ID_inst=inst;
+        IF_ID_inst<=inst;
 end
 
 //pipeline
@@ -199,7 +201,7 @@ always @(posedge clk or posedge rst) begin
         EX_MEM_is_branch <= is_branch;
         EX_MEM_rd <= ID_EX_rd;
         EX_MEM_result <= result;
-        EX_MEM_data2 <= ID_EX_data2;
+        EX_MEM_data2 <= for_ID_EX_data2;
         EX_MEM_mem_rw <= mem_rw;
         EX_MEM_is_load <= is_load;
         EX_MEM_pc <= ID_EX_pc;
@@ -216,8 +218,8 @@ always @(posedge clk or posedge rst) begin
         IF_ID_pc <= IF_ID_pc;
         IF_ID_prediction<=IF_ID_prediction;
         // ID -> EX
-        ID_EX_rs1<=rs1;
-        ID_EX_rs2<=rs2;
+        ID_EX_rs1<=ID_EX_rs1;
+        ID_EX_rs2<=ID_EX_rs2;
         ID_EX_pc <= ID_EX_pc;
         ID_EX_opcode <= ID_EX_opcode;
         ID_EX_imm <= ID_EX_imm;
@@ -265,7 +267,7 @@ always @(posedge clk or posedge rst) begin
         EX_MEM_is_branch <= is_branch;
         EX_MEM_rd <= ID_EX_rd;
         EX_MEM_result <= result;
-        EX_MEM_data2 <= ID_EX_data2;
+        EX_MEM_data2 <= for_ID_EX_data2;
         EX_MEM_mem_rw <= mem_rw;
         EX_MEM_is_load <= is_load;
         EX_MEM_pc <= ID_EX_pc;

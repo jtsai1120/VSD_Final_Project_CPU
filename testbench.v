@@ -44,7 +44,7 @@ end
 
 initial begin : terminal_display
     $display("---Simulation Start---");
-    $monitor("t0=%d,t1=%d,t2=%d,t3=%d,t4=%d",top.ID.RF[5],top.ID.RF[6],top.ID.RF[7],top.ID.RF[28],top.ID.RF[29]);
+    $monitor("t0=%d,t1=%d,t2=%d,t3=%d,t4=%d,t5=%d,t6=%d",top.ID.RF[5],top.ID.RF[6],top.ID.RF[7],top.ID.RF[28],top.ID.RF[29],top.ID.RF[30],top.ID.RF[31]);
     //$monitor("clk=%b, rst=%b, inst=%h, pc=%h, mem_data=%h, addr=%h, mem_rw=%b,NOP=%b,flush=%b", clk, rst, inst, pc, mem_data, addr, mem_rw,top.NOP,top.flush);
 end
 
@@ -54,7 +54,7 @@ integer f_prv2, f_prv1, f_cur;
 
 initial begin : execute
     rst = 1;
-    $readmemb("fibo_Mnemonic.prog", Inst_Mem.IM);
+    $readmemb("sorting.prog", Inst_Mem.IM);
      
     #(`HALF_CLK_TIME * 20) rst = 0;
     
