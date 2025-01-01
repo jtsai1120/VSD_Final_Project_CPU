@@ -18,7 +18,7 @@ module gshare_predictor (
 
     wire [7:0] index;           
     wire [7:0] update_index;
-   
+    
     assign index = branch_address ^ GHR;
     assign update_index = update_address ^ GHR;
     integer i;

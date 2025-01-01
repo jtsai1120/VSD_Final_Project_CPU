@@ -16,12 +16,13 @@ always @(posedge clk or posedge rst) begin
     if (rst) begin
         cpc <= 0;
     end
-    else if (flush) begin
-        cpc <= pc_branch;
-    end
     else if(NOP||halt_happen) begin
         cpc <= cpc;
     end
+    else if (flush) begin
+        cpc <= pc_branch;
+    end
+    
     else if(prediction) begin
         cpc<=control_pc;
     end

@@ -61,8 +61,8 @@ output     [63:0]rs1_data_control;
 
 reg [63:0] RF [0:31];
 assign rs1_data_control=(wrd==rs1_addr_control)?wdata:RF[rs1_addr_control];
-always @(inst or rst or flush) begin
-    if (rst || flush) begin
+always @(inst or rst ) begin
+    if (rst ) begin
         opcode = `NOP_opcode;
         rd = `NOP_rd;
         func3 = `NOP_func3;
@@ -79,8 +79,8 @@ always @(inst or rst or flush) begin
         rs2=`R_rs2;
     end
 end 
-always @(negedge clk or posedge rst or posedge flush)begin
-    if(rst || flush)begin
+always @(negedge clk or posedge rst )begin
+    if(rst )begin
         data1<=RF[`NOP_rs1];
         data2<=RF[`NOP_rs2];
     end
@@ -109,8 +109,8 @@ always @(negedge clk or posedge rst or posedge flush)begin
         
     end
 end
-always @(rst or flush or inst) begin
-    if (rst || flush) begin
+always @(rst  or inst) begin
+    if (rst ) begin
         imm_ext = 0;
     end
     else begin

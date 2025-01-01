@@ -32,7 +32,7 @@ reg [63:0] comb_DM [0:Size-1];
 
 always @(*) begin
     for (j = 0; j < Size; j = j + 1)
-        comb_DM[j] = {DM[j*8+7],DM[j*8+6],DM[j*8+5],DM[j*8+4],DM[j*8+3],DM[j*8+2],DM[j*8+1],DM[j*8]};
+        comb_DM[j] = {DM[j*8],DM[j*8+1],DM[j*8+2],DM[j*8+3],DM[j*8+4],DM[j*8+5],DM[j*8+6],DM[j*8+7]};
 end
 
 integer i;
