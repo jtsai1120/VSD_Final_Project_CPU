@@ -36,7 +36,7 @@ module gshare_predictor (
                 BHT[i] <= 2'b01; // //preset weak not jump
             end 
         end
-        else if(update) begin 
+        else begin 
             if (branch_taken) begin
                 if (BHT[update_index] < 2'b11) BHT[update_index] <= BHT[update_index] + 1;
                 else BHT[update_index] <= BHT[update_index];
@@ -46,16 +46,12 @@ module gshare_predictor (
                 else BHT[update_index] <= BHT[update_index];
             end
         end
-        else begin
-            for (i = 0; i < BHT_SIZE; i = i + 1) begin
-                BHT[i] <= BHT[i]; // keep value
-            end 
-        end
+        
     end
     always@( posedge update or posedge rst)begin
         // update GHR
         if(rst) GHR <= 0;
-        else if(update)   GHR <= {GHR[GHR_BITS-2:0], branch_taken};
-        else GHR <= GHR;
+        else GHR <= {GHR[GHR_BITS-2:0], branch_taken};
+       
     end
 endmodule

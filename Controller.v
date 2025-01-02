@@ -1,5 +1,5 @@
-//`include "branch_predict.v"
-//`include "ForwardingUnit.v"
+`include "branch_predict.v"
+`include "ForwardingUnit.v"
 
 module Controller (ForwardA,ForwardB,new_pc,rs1_addr,prediction,NOP,clk,rst,is_load,ID_EX_opcode,EX_MEM_opcode,MEM_WB_opcode,
                                 inst,ID_EX_rs1,ID_EX_rs2,EX_MEM_rd,MEM_WB_rd,is_branch,pc,EX_MEM_pc,rs1_data);

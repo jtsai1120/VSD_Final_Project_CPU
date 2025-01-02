@@ -5,11 +5,11 @@
 `define NOP_func7 7'b0000000
 `define NOP_func3 3'b000
 `define NOP_imm 12'b000000000000
-/*`include "IF.v"
+`include "IF.v"
 `include "ID.v"
 `include "EX.v"
 `include "WB.v"
-`include "Controller.v"*/
+`include "Controller.v"
 
 module top (halt,mem_data, EX_MEM_mem_rw, out_result, pc, clk, rst, inst);
 

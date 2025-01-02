@@ -34,13 +34,13 @@
 `define J_imm_19_12 inst[19:12]
 `define J_rd inst[11:7]
 
-`define NOP_opcode 7'b0010011
+/*`define NOP_opcode 7'b0010011
 `define NOP_rs1 5'b00000
 `define NOP_rs2 5'b00000
 `define NOP_rd 5'b00000
 `define NOP_func7 7'b0000000
 `define NOP_func3 3'b000
-`define NOP_imm 12'b000000000000
+`define NOP_imm 12'b000000000000*/
 module ID (rs1,rs2,rs1_data_control,opcode, data1, data2, rd, func3, func7, imm_ext, clk, rst, inst, wdata, wrd, wopcode,rs1_addr_control,flush);
 parameter R_type = 0110011;
 input clk, rst,flush;
