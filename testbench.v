@@ -18,13 +18,14 @@ reg clk, rst;
 wire [31:0] inst;
 wire [31:0] pc;
 wire [63:0] mem_data;
+wire [2:0] width;
 wire [63:0] addr;
 wire mem_rw;
 wire halt;
 reg [63:0] tb_read_addr;
 wire [63:0] tb_read_data;
 
-top top(halt, mem_data, mem_rw, addr, pc, clk, rst, inst);
+top top(halt, mem_data, mem_rw, addr, pc, clk, rst, inst,width);
 Inst_Mem Inst_Mem(inst, pc);
 Data_Mem Data_Mem(mem_data, clk, rst, mem_rw, addr);
 

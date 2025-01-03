@@ -14,17 +14,22 @@ DM[addr+5] = mem_data[47:40];
 DM[addr+6] = mem_data[55:48];
 DM[addr+7] = mem_data[63:56];
 */
-module Data_Mem(mem_data, clk, rst, mem_rw, addr);
+module Data_Mem(mem_data, clk, rst, mem_rw, addr,width);
 
 parameter Size = 8192;
 input clk, rst;
 input mem_rw;
+input [2:0] width;
 input [63:0] addr;
 inout [63:0] mem_data;
 
 reg signed [7:0] DM [0:Size-1];
 
-assign mem_data = (mem_rw)? 64'bz : {DM[addr],DM[addr+1],DM[addr+2],DM[addr+3],DM[addr+4],DM[addr+5],DM[addr+6],DM[addr+7]};
+assign mem_data = (mem_rw)? 64'bz : 
+                  (width==0)?{56'b0,DM[addr]}:
+                  (width==1)?{48'b0,DM[addr],DM[addr+1]}:
+                  (width==3)?{32'b0,DM[addr],DM[addr+1],DM[addr+2],DM[addr+3]}:
+                  {DM[addr],DM[addr+1],DM[addr+2],DM[addr+3],DM[addr+4],DM[addr+5],DM[addr+6],DM[addr+7]};
 
 integer j;
 
@@ -44,6 +49,19 @@ always @(negedge clk or rst) begin
         end
     end
     else if (mem_rw) begin
+        case(width)
+        011:begin
+        DM[addr+3] <= mem_data[7:0];
+        DM[addr+2] <= mem_data[15:8];
+        DM[addr+1] <= mem_data[23:16];
+        DM[addr]   <= mem_data[31:24];
+        end
+        001:begin
+        DM[addr+1] <= mem_data[7:0];
+        DM[addr]   <= mem_data[15:8];
+        end
+        000:DM[addr]   <= mem_data[7:0];
+        default:begin
         DM[addr+7] <= mem_data[7:0];
         DM[addr+6] <= mem_data[15:8];
         DM[addr+5] <= mem_data[23:16];
@@ -52,6 +70,8 @@ always @(negedge clk or rst) begin
         DM[addr+2] <= mem_data[47:40];
         DM[addr+1] <= mem_data[55:48];
         DM[addr]   <= mem_data[63:56];
+        end
+        endcase
     end else begin
         for (i = 0; i < Size; i = i + 1) begin
             DM[i] <= DM[i];
