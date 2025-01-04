@@ -120,13 +120,11 @@ assign flush=is_branch^ID_EX_prediction;
 
 assign halt=(MEM_WB_opcode==7'b0000000);
 
-always@(rst or ID_EX_opcode)begin
+always@(posedge rst or posedge clk)begin
     if(rst)
-        halt_happen=0;
-    else if(ID_EX_opcode==7'b0000000)
+        halt_happen<=0;
+    else if(opcode==7'b0000000)
         halt_happen=1;
-    else
-        halt_happen=halt_happen;
 end
 
 always@(posedge clk  or posedge rst  )begin
@@ -134,8 +132,6 @@ always@(posedge clk  or posedge rst  )begin
         IF_ID_inst<={25'b0,`NOP_opcode};
     else if(NOP)
         IF_ID_inst<=IF_ID_inst;
-    else if(flush || halt_happen)
-        IF_ID_inst<={25'b0,`NOP_opcode};
     else if(flush || halt_happen)
         IF_ID_inst<={25'b0,`NOP_opcode};
     else
