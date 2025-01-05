@@ -120,7 +120,7 @@ assign flush=is_branch^ID_EX_prediction;
 assign halt=(MEM_WB_opcode==7'b0000000);
 
 always@(posedge rst or posedge clk)begin
-    if(rst)
+    if(rst||flush)
         halt_happen<=0;
     else if(opcode==7'b0000000)
         halt_happen<=1;
