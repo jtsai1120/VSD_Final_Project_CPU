@@ -64,7 +64,6 @@ wire[63:0] result;
 reg [6:0]  EX_MEM_opcode;
 reg [31:0] EX_MEM_pc_branch;
 reg [31:0] EX_MEM_pc;
-reg        EX_MEM_is_branch; // called Zero in ALU (this signal present useless)
 reg [4:0]  EX_MEM_rd;
 reg [63:0] EX_MEM_result;
 reg [63:0] EX_MEM_data2;
@@ -161,7 +160,6 @@ always @(posedge clk or posedge rst) begin
         // EX -> MEM
         EX_MEM_opcode <= `NOP_opcode;
         EX_MEM_pc_branch <= 0;
-        EX_MEM_is_branch <= 0;
         EX_MEM_rd <= 0;
         EX_MEM_result <= 0;
         EX_MEM_data2 <= 0;
@@ -195,7 +193,6 @@ always @(posedge clk or posedge rst) begin
         // EX -> MEM
         EX_MEM_opcode <= `NOP_opcode;
         EX_MEM_pc_branch <= 0;
-        EX_MEM_is_branch <= 0;
         EX_MEM_rd <= `NOP_rd;
         EX_MEM_result <= 0;
         EX_MEM_data2 <= 0;
@@ -226,7 +223,6 @@ always @(posedge clk or posedge rst) begin
         //EX_MEM
         EX_MEM_opcode <= ID_EX_opcode;
         EX_MEM_pc_branch <= pc_branch;
-        EX_MEM_is_branch <= is_branch;
         EX_MEM_rd <= ID_EX_rd;
         EX_MEM_result <= result;
         EX_MEM_data2 <= for_ID_EX_data2;
@@ -260,7 +256,6 @@ always @(posedge clk or posedge rst) begin
         // EX -> MEM
         EX_MEM_opcode <= ID_EX_opcode;
         EX_MEM_pc_branch <= pc_branch;
-        EX_MEM_is_branch <= is_branch;
         EX_MEM_rd <= ID_EX_rd;
         EX_MEM_result <= result;
         EX_MEM_data2 <= for_ID_EX_data2;
