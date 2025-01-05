@@ -34,7 +34,7 @@
 `define J_imm_19_12 inst[19:12]
 `define J_rd inst[11:7]
 
-/*`define NOP_opcode 7'b0010011
+/*define NOP_opcode 7'b0010011
 `define NOP_rs1 5'b00000
 `define NOP_rs2 5'b00000
 `define NOP_rd 5'b00000

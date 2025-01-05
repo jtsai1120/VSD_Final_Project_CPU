@@ -16,7 +16,6 @@ module top (halt,mem_data, EX_MEM_mem_rw, out_result, pc, clk, rst, inst);
 inout [63:0] mem_data;
 input clk, rst;
 input [31:0] inst;
-
 output [31:0] pc;
 output EX_MEM_mem_rw;
 output [63:0]out_result;
@@ -79,7 +78,7 @@ reg [4:0]  MEM_WB_rd;
 reg [63:0] MEM_WB_result;
 reg        MEM_WB_is_load;
 reg [63:0] MEM_WB_mem_data;
-reg        MEM_WB_mem_rw;
+
 
 
 IF IF(pc, clk, rst, pc_branch,NOP,flush,predictin,control_pc,halt_happen);
@@ -124,7 +123,7 @@ always@(posedge rst or posedge clk)begin
     if(rst)
         halt_happen<=0;
     else if(opcode==7'b0000000)
-        halt_happen=1;
+        halt_happen<=1;
 end
 
 always@(posedge clk  or posedge rst  )begin
@@ -142,7 +141,7 @@ end
 always @(posedge clk or posedge rst) begin
     if (rst) begin
         // clear all registers for pipeline
-        //?���??�??�??????�??nst???���? addi x0 x0 0
+        //?���???�???�???????�???nst???���?? addi x0 x0 0
 
          // IF -> ID
         IF_ID_pc <= 0;
@@ -175,7 +174,7 @@ always @(posedge clk or posedge rst) begin
         MEM_WB_result <= 0;
         MEM_WB_is_load <= 0;
         MEM_WB_mem_data <= 0;
-        MEM_WB_mem_rw <= 0;
+        
     end
     else if(NOP) begin
         // IF -> ID
@@ -207,7 +206,7 @@ always @(posedge clk or posedge rst) begin
         MEM_WB_result <= EX_MEM_result;
         MEM_WB_is_load <= EX_MEM_is_load;
         MEM_WB_mem_data <= mem_data;
-        MEM_WB_mem_rw <= EX_MEM_mem_rw;
+        
         end
     else if(flush || halt_happen)begin
         IF_ID_pc<=0;
@@ -240,7 +239,7 @@ always @(posedge clk or posedge rst) begin
         MEM_WB_result <= EX_MEM_result;
         MEM_WB_is_load <= EX_MEM_is_load;
         MEM_WB_mem_data <= mem_data;
-        MEM_WB_mem_rw <= EX_MEM_mem_rw;
+        
     end 
     else begin
         // IF -> ID
@@ -274,7 +273,7 @@ always @(posedge clk or posedge rst) begin
         MEM_WB_result <= EX_MEM_result;
         MEM_WB_is_load <= EX_MEM_is_load;
         MEM_WB_mem_data <= mem_data;
-        MEM_WB_mem_rw <= EX_MEM_mem_rw;
+        
         
     end
 end
