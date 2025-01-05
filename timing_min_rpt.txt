@@ -1,0 +1,50 @@
+ 
+****************************************
+Report : timing
+        -path full
+        -delay min
+        -max_paths 1
+        -sort_by group
+Design : top
+Version: Q-2019.12
+Date   : Sat Jan  4 12:37:15 2025
+****************************************
+
+ # A fanout number of 1000 was used for high fanout net computations.
+
+Operating Conditions: fast   Library: fast
+Wire Load Model Mode: top
+
+  Startpoint: mem_data[0]
+              (input port clocked by CLK)
+  Endpoint: MEM_WB_mem_data_reg_0_
+            (rising edge-triggered flip-flop clocked by CLK)
+  Path Group: CLK
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  top                tsmc18_wl10           slow
+
+  Point                                    Incr       Path
+  -----------------------------------------------------------
+  clock CLK (rise edge)                   50.00      50.00
+  clock network delay (ideal)              2.00      52.00
+  input external delay                     0.20      52.20 f
+  mem_data[0] (inout)                      0.19      52.39 f
+  MEM_WB_mem_data_reg_0_/D (DFFRHQX1)      0.00      52.39 f
+  data arrival time                                  52.39
+
+  clock CLK (rise edge)                   50.00      50.00
+  clock network delay (ideal)              2.00      52.00
+  MEM_WB_mem_data_reg_0_/CK (DFFRHQX1)     0.00      52.00 r
+  library hold time                       -0.07      51.93
+  data required time                                 51.93
+  -----------------------------------------------------------
+  data required time                                 51.93
+  data arrival time                                 -52.39
+  -----------------------------------------------------------
+  slack (MET)                                         0.46
+
+
+1

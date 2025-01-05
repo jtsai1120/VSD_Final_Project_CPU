@@ -1,0 +1,99 @@
+Information: Updating design information... (UID-85)
+Warning: Design 'top' contains 1 high-fanout nets. A fanout number of 1000 will be used for delay calculations involving these nets. (TIM-134)
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -max_paths 1
+        -sort_by group
+Design : top
+Version: Q-2019.12
+Date   : Sat Jan  4 12:37:09 2025
+****************************************
+
+ # A fanout number of 1000 was used for high fanout net computations.
+
+Operating Conditions: slow   Library: slow
+Wire Load Model Mode: top
+
+  Startpoint: ID/RF_reg_13__0_
+              (falling edge-triggered flip-flop clocked by CLK)
+  Endpoint: IF/cpc_reg_31_
+            (rising edge-triggered flip-flop clocked by CLK)
+  Path Group: CLK
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  top                tsmc18_wl10           slow
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock CLK (fall edge)                                   0.00       0.00
+  clock network delay (ideal)                             2.00       2.00
+  ID/RF_reg_13__0_/CKN (DFFNRX1)                          0.00 #     2.00 f
+  ID/RF_reg_13__0_/Q (DFFNRX1)                            0.96       2.96 f
+  ID/U3832/Y (AOI22X1)                                    0.38       3.34 r
+  ID/U3836/Y (NAND4X1)                                    0.22       3.57 f
+  ID/U3837/Y (OAI21XL)                                    0.38       3.95 r
+  ID/U3849/Y (NAND2X1)                                    0.17       4.12 f
+  ID/U1045/Y (OAI2BB2X1)                                  0.41       4.53 f
+  ID/rs1_data_control[0] (ID)                             0.00       4.53 f
+  Controller/rs1_data[0] (Controller)                     0.00       4.53 f
+  Controller/add_65/A[0] (Controller_DW01_add_0)          0.00       4.53 f
+  Controller/add_65/U1/Y (AND2X2)                         0.34       4.87 f
+  Controller/add_65/U1_1/CO (ADDFX2)                      0.38       5.24 f
+  Controller/add_65/U1_2/CO (ADDFX2)                      0.39       5.64 f
+  Controller/add_65/U1_3/CO (ADDFX2)                      0.39       6.03 f
+  Controller/add_65/U1_4/CO (ADDFX2)                      0.39       6.43 f
+  Controller/add_65/U1_5/CO (ADDFX2)                      0.39       6.82 f
+  Controller/add_65/U1_6/CO (ADDFX2)                      0.40       7.22 f
+  Controller/add_65/U1_7/CO (ADDFX2)                      0.40       7.61 f
+  Controller/add_65/U1_8/CO (ADDFX2)                      0.40       8.01 f
+  Controller/add_65/U1_9/CO (ADDFX2)                      0.40       8.40 f
+  Controller/add_65/U1_10/CO (ADDFX2)                     0.40       8.80 f
+  Controller/add_65/U1_11/CO (ADDFX2)                     0.40       9.19 f
+  Controller/add_65/U1_12/CO (ADDFX2)                     0.40       9.59 f
+  Controller/add_65/U1_13/CO (ADDFX2)                     0.40       9.98 f
+  Controller/add_65/U1_14/CO (ADDFX2)                     0.40      10.38 f
+  Controller/add_65/U1_15/CO (ADDFX2)                     0.40      10.78 f
+  Controller/add_65/U1_16/CO (ADDFX2)                     0.40      11.17 f
+  Controller/add_65/U1_17/CO (ADDFX2)                     0.40      11.57 f
+  Controller/add_65/U1_18/CO (ADDFX2)                     0.40      11.96 f
+  Controller/add_65/U1_19/CO (ADDFX2)                     0.40      12.36 f
+  Controller/add_65/U1_20/CO (ADDFX2)                     0.40      12.75 f
+  Controller/add_65/U1_21/CO (ADDFX2)                     0.40      13.15 f
+  Controller/add_65/U1_22/CO (ADDFX2)                     0.40      13.55 f
+  Controller/add_65/U1_23/CO (ADDFX2)                     0.40      13.94 f
+  Controller/add_65/U1_24/CO (ADDFX2)                     0.40      14.34 f
+  Controller/add_65/U1_25/CO (ADDFX2)                     0.40      14.73 f
+  Controller/add_65/U1_26/CO (ADDFX2)                     0.40      15.13 f
+  Controller/add_65/U1_27/CO (ADDFX2)                     0.40      15.52 f
+  Controller/add_65/U1_28/CO (ADDFX2)                     0.40      15.92 f
+  Controller/add_65/U1_29/CO (ADDFX2)                     0.40      16.31 f
+  Controller/add_65/U1_30/CO (ADDFX2)                     0.40      16.72 f
+  Controller/add_65/U1_31/Y (XOR3X2)                      0.27      16.99 f
+  Controller/add_65/SUM[31] (Controller_DW01_add_0)       0.00      16.99 f
+  Controller/U30/Y (AOI22X1)                              0.27      17.26 r
+  Controller/U28/Y (NAND2X1)                              0.17      17.43 f
+  Controller/new_pc[31] (Controller)                      0.00      17.43 f
+  IF/control_pc[31] (IF)                                  0.00      17.43 f
+  IF/U22/Y (AOI22X1)                                      0.28      17.71 r
+  IF/U20/Y (NAND2X1)                                      0.16      17.87 f
+  IF/cpc_reg_31_/D (DFFRHQX1)                             0.00      17.87 f
+  data arrival time                                                 17.87
+
+  clock CLK (rise edge)                                  50.00      50.00
+  clock network delay (ideal)                             2.00      52.00
+  IF/cpc_reg_31_/CK (DFFRHQX1)                            0.00      52.00 r
+  library setup time                                     -0.38      51.62
+  data required time                                                51.62
+  --------------------------------------------------------------------------
+  data required time                                                51.62
+  data arrival time                                                -17.87
+  --------------------------------------------------------------------------
+  slack (MET)                                                       33.75
+
+
+1

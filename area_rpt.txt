@@ -1,0 +1,30 @@
+ 
+****************************************
+Report : area
+Design : top
+Version: Q-2019.12
+Date   : Sat Jan  4 12:37:20 2025
+****************************************
+
+Library(s) Used:
+
+    slow (File: /home/ncku_class/vsd_2024/vsd202400/CIC/180/SynoposysDC/slow.db)
+
+Number of ports:                         7938
+Number of nets:                         62123
+Number of cells:                        47673
+Number of combinational cells:          44118
+Number of sequential cells:              3432
+Number of macros/black boxes:               0
+Number of buf/inv:                       5681
+Number of references:                      27
+
+Combinational area:            1181929.803041
+Buf/Inv area:                    39946.738122
+Noncombinational area:          246798.926506
+Macro/Black Box area:                0.000000
+Net Interconnect area:         6847573.989624
+
+Total cell area:               1428728.729548
+Total area:                    8276302.719172
+1
