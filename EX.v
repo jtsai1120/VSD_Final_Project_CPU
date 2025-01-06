@@ -717,8 +717,9 @@ wire [127:0] product [0:63];
 wire [127:0] carry [0:64];
 wire [128:0] carry_second [0:64];
 wire [127:0] sum [0:65];
-
-
+/*
+    assign result = A*B;
+*/
 genvar i,j; 
 
 /*partial products*/
@@ -908,12 +909,14 @@ CLA cla( ones_Complement , 64'b1 , 1'b0 , twos_complement , out );
 endmodule
 
 module divider(
-    input [63:0] dividend,
-    input [63:0] divisor,
-    output [63:0] quotient,
-    output [63:0] remainder
+    input signed[63:0] dividend,
+    input signed[63:0] divisor,
+    output signed[63:0] quotient,
+    output signed[63:0] remainder
 );
-
+    assign quotient = dividend / divisor;
+    assign remainder = dividend % divisor;
+/*
 // Temporary variables for calculation
 wire [63:0] dividend_;  // 2's complement of dividend
 wire [63:0] divisor_;   // 2's complement of divisor
@@ -989,6 +992,6 @@ assign quotient = (divisor == 0) ? 64'b0 :
 assign remainder = (divisor == 0) ? dividend :
                     (dividend[63] ? signed_remainder : remainder_check);
 
-
+*/
 endmodule
 

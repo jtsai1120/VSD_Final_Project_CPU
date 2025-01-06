@@ -1,7 +1,7 @@
 
 module Inst_Mem (inst, pc);
 
-parameter Size = 1024;
+parameter Size = 8192;
 
 input [31:0] pc;
 output [31:0] inst;

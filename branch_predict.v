@@ -8,6 +8,7 @@ module gshare_predictor (
     input [7:0] branch_address,update_address, 
     input branch_taken,         
     input [6:0]opcode,
+    input [6:0]EX_MEM_opcode,
     output reg prediction        
 );
     parameter GHR_BITS = 8;     
@@ -51,7 +52,8 @@ module gshare_predictor (
     always@( posedge update or posedge rst)begin
         // update GHR
         if(rst) GHR <= 0;
-        else GHR <= {GHR[GHR_BITS-2:0], branch_taken};
+        else if(EX_MEM_opcode==7'b1100011)GHR <= {GHR[GHR_BITS-2:0], branch_taken};
+        else GHR<=GHR;
        
     end
 endmodule

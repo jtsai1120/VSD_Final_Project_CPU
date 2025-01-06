@@ -16,7 +16,6 @@ module top (halt,mem_data, EX_MEM_mem_rw, out_result, pc, clk, rst, inst);
 inout [63:0] mem_data;
 input clk, rst;
 input [31:0] inst;
-
 output [31:0] pc;
 output EX_MEM_mem_rw;
 output [63:0]out_result;
@@ -65,7 +64,6 @@ wire[63:0] result;
 reg [6:0]  EX_MEM_opcode;
 reg [31:0] EX_MEM_pc_branch;
 reg [31:0] EX_MEM_pc;
-reg        EX_MEM_is_branch; // called Zero in ALU (this signal present useless)
 reg [4:0]  EX_MEM_rd;
 reg [63:0] EX_MEM_result;
 reg [63:0] EX_MEM_data2;
@@ -79,7 +77,7 @@ reg [4:0]  MEM_WB_rd;
 reg [63:0] MEM_WB_result;
 reg        MEM_WB_is_load;
 reg [63:0] MEM_WB_mem_data;
-reg        MEM_WB_mem_rw;
+
 
 
 IF IF(pc, clk, rst, pc_branch,NOP,flush,predictin,control_pc,halt_happen);
@@ -120,13 +118,13 @@ assign flush=is_branch^ID_EX_prediction;
 
 assign halt=(MEM_WB_opcode==7'b0000000);
 
-always@(rst or ID_EX_opcode)begin
-    if(rst)
-        halt_happen=0;
-    else if(ID_EX_opcode==7'b0000000)
-        halt_happen=1;
-    else
-        halt_happen=halt_happen;
+always@(posedge rst or posedge clk)begin
+    if(rst/*||flush*/)
+        halt_happen<=0;
+    else if (flush)
+	 halt_happen<=0;
+    else if(opcode==7'b0000000)
+        halt_happen<=1;
 end
 
 always@(posedge clk  or posedge rst  )begin
@@ -134,8 +132,6 @@ always@(posedge clk  or posedge rst  )begin
         IF_ID_inst<={25'b0,`NOP_opcode};
     else if(NOP)
         IF_ID_inst<=IF_ID_inst;
-    else if(flush || halt_happen)
-        IF_ID_inst<={25'b0,`NOP_opcode};
     else if(flush || halt_happen)
         IF_ID_inst<={25'b0,`NOP_opcode};
     else
@@ -146,7 +142,7 @@ end
 always @(posedge clk or posedge rst) begin
     if (rst) begin
         // clear all registers for pipeline
-        //?���??�??�??????�??nst???���? addi x0 x0 0
+        //?���???�???�???????�???nst???���?? addi x0 x0 0
 
          // IF -> ID
         IF_ID_pc <= 0;
@@ -166,7 +162,6 @@ always @(posedge clk or posedge rst) begin
         // EX -> MEM
         EX_MEM_opcode <= `NOP_opcode;
         EX_MEM_pc_branch <= 0;
-        EX_MEM_is_branch <= 0;
         EX_MEM_rd <= 0;
         EX_MEM_result <= 0;
         EX_MEM_data2 <= 0;
@@ -179,7 +174,7 @@ always @(posedge clk or posedge rst) begin
         MEM_WB_result <= 0;
         MEM_WB_is_load <= 0;
         MEM_WB_mem_data <= 0;
-        MEM_WB_mem_rw <= 0;
+        
     end
     else if(NOP) begin
         // IF -> ID
@@ -200,7 +195,6 @@ always @(posedge clk or posedge rst) begin
         // EX -> MEM
         EX_MEM_opcode <= `NOP_opcode;
         EX_MEM_pc_branch <= 0;
-        EX_MEM_is_branch <= 0;
         EX_MEM_rd <= `NOP_rd;
         EX_MEM_result <= 0;
         EX_MEM_data2 <= 0;
@@ -211,7 +205,7 @@ always @(posedge clk or posedge rst) begin
         MEM_WB_result <= EX_MEM_result;
         MEM_WB_is_load <= EX_MEM_is_load;
         MEM_WB_mem_data <= mem_data;
-        MEM_WB_mem_rw <= EX_MEM_mem_rw;
+        
         end
     else if(flush || halt_happen)begin
         IF_ID_pc<=0;
@@ -231,7 +225,6 @@ always @(posedge clk or posedge rst) begin
         //EX_MEM
         EX_MEM_opcode <= ID_EX_opcode;
         EX_MEM_pc_branch <= pc_branch;
-        EX_MEM_is_branch <= is_branch;
         EX_MEM_rd <= ID_EX_rd;
         EX_MEM_result <= result;
         EX_MEM_data2 <= for_ID_EX_data2;
@@ -244,7 +237,7 @@ always @(posedge clk or posedge rst) begin
         MEM_WB_result <= EX_MEM_result;
         MEM_WB_is_load <= EX_MEM_is_load;
         MEM_WB_mem_data <= mem_data;
-        MEM_WB_mem_rw <= EX_MEM_mem_rw;
+        
     end 
     else begin
         // IF -> ID
@@ -265,7 +258,6 @@ always @(posedge clk or posedge rst) begin
         // EX -> MEM
         EX_MEM_opcode <= ID_EX_opcode;
         EX_MEM_pc_branch <= pc_branch;
-        EX_MEM_is_branch <= is_branch;
         EX_MEM_rd <= ID_EX_rd;
         EX_MEM_result <= result;
         EX_MEM_data2 <= for_ID_EX_data2;
@@ -278,7 +270,7 @@ always @(posedge clk or posedge rst) begin
         MEM_WB_result <= EX_MEM_result;
         MEM_WB_is_load <= EX_MEM_is_load;
         MEM_WB_mem_data <= mem_data;
-        MEM_WB_mem_rw <= EX_MEM_mem_rw;
+        
         
     end
 end

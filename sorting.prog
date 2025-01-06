@@ -1,0 +1,49 @@
+00000000 10000000 00000010 10010011     // start:                   addi t0, x0, 8              // Initialize array base address pointer to Mem[1]
+00000000 10100000 00000011 00010011     //                          addi t1, x0, 10             // Initialize array length to 10
+00000000 00000000 00000011 10010011     //                          addi t2, x0, 0              // Initialize counter i to 0
+00000000 00110000 00001110 00010011     // load_unsorted_numbers:   addi t3, x0, 3              // 1
+00000001 11000010 10110000 00100011     //                          sd t3, 0(t0)    
+00000000 01100000 00001110 00010011     //                          addi t3, x0, 6              // 2
+00000001 11000010 10110100 00100011     //                          sd t3, 8(t0)    
+00000000 00010000 00001110 00010011     //                          addi t3, x0, 1              // 3
+00000001 11000010 10111000 00100011     //                          sd t3, 16(t0)
+00000000 10100000 00001110 00010011     //                          addi t3, x0, 10             // 4
+00000001 11000010 10111100 00100011     //                          sd t3, 24(t0)    
+11111111 11110000 00001110 00010011     //                          addi t3, x0, -1             // 5
+00000011 11000010 10110000 00100011     //                          sd t3, 32(t0)
+00000000 10000000 00001110 00010011     //                          addi t3, x0, 8              // 6
+00000011 11000010 10110100 00100011     //                          sd t3, 40(t0)
+00000000 00100000 00001110 00010011     //                          addi t3, x0, 2              // 7
+00000011 11000010 10111000 00100011     //                          sd t3, 48(t0)
+11111111 10010000 00001110 00010011     //                          addi t3, x0, -7             // 8
+00000011 11000010 10111100 00100011     //                          sd t3, 56(t0)
+00000000 00010000 00001110 00010011     //                          addi t3, x0, 1              // 9
+00000101 11000010 10110000 00100011     //                          sd t3, 64(t0)
+00000000 00000000 00001110 00010011     //                          addi t3, x0, 0              // 10
+00000101 11000010 10110100 00100011     //                          sd t3, 72(t0)
+00000010 01100011 10000000 01100011     // copy_value:              beq t2, t1, end_copy_value_loop     // if i == length, end copy_value loop
+00000000 10000000 00001110 10010011     //                          addi t4, x0, 8              // Initialize t4 to 8 (8-byte, 64-bit)
+00000011 11010011 10001110 10110011     //                          mul t4, t2, t4              // offset_byte t4 = i * 8 
+00000001 11010010 10001110 10110011     //                          add t4, t0, t4              // t4 = base address + offset_byte
+00000000 00001110 10111111 00000011     //                          ld t5, 0(t4)                // Load array[i] into t5
+00000101 11101110 10111000 00100011     //                          sd t5, 80(t4)               // Store t5 into array[i+10]
+00000000 00010011 10000011 10010011     //                          addi t2, t2, 1              // Add counter i by 1
+11111110 01011111 11110000 01101111     //                          jal x0, copy_value          // Jump to start of copy_value
+00000101 10000000 00000010 10010011     // end_copy_value_loop:     addi t0, x0, 88             // Initialize array base address pointer to 88
+00000000 00000000 00000011 10010011     //                          addi t2, x0, 0              // Initialize outer loop counter i to 0
+00000010 01100011 10001110 01100011     // outer_loop:              beq t2, t1, end_outer_loop  // if i == length, end outer loop
+00000000 00010000 00001110 00010011     //                          addi t3, x0, 1              // Initialize inner loop counter j to 0
+00000010 01101110 00000110 01100011     // inner_loop:              beq t3, t1, end_inner_loop  // if j == length, end inner loop
+00000000 10000000 00001110 10010011     //                          addi t4, x0, 8              // Initialize t4 to 8 (8-byte, 64-bit)
+00000011 11011110 00001110 10110011     //                          mul t4, t3, t4              // offset_byte t4 = j * 8 
+00000001 11010010 10001110 10110011     //                          add t4, t0, t4              // t4 = base address + offset_byte
+11111111 10001110 10111111 00000011     //                          ld t5, -8(t4)                // Load array[j] into t5
+00000000 00001110 10111111 10000011     //                          ld t6, 0(t4)                // Load array[j+1] into t6
+00000001 11111111 01000110 01100011     //                          blt t5, t6, skip_swap       // if array[j] < array[j+1], skip swap
+11111111 11111110 10111100 00100011     //                          sd t6, -8(t4)                // Store array[j+1] into array[j]
+00000001 11101110 10110000 00100011     //                          sd t5, 0(t4)                // Store array[j] into array[j+1]
+00000000 00011110 00001110 00010011     // skip_swap:               addi t3, t3, 1              // Increment inner loop counter j by 1
+11111101 10011111 11110000 01101111     //                          jal x0, inner_loop          // Jump to start of inner loop
+00000000 00010011 10000011 10010011     // end_inner_loop:          addi t2, t2, 1              // Increment outer loop counter i by 1
+11111100 10011111 11110000 01101111     //                          jal x0, outer_loop          // Jump to start of outer loop
+00000000 00000000 00000000 00000000     // end_outer_loop:          halt
